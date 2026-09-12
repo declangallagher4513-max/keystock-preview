@@ -268,8 +268,14 @@
       rgba(5,7,11,0.80) 46%, rgba(5,7,11,0.34) 62%, rgba(5,7,11,0) 80%);
   }
   @media (max-width: 860px) {
+    /* Reaches as high as the copy does. Lifting the lead copy clear of the
+       picker moved it out of the strong end of the old gradient and the lede
+       measured 3.1:1 over a lit phone screen -- on the composited render, not
+       on a container. The stops now hold above 0.85 through the whole copy band
+       and only then let go. */
     .scrim-deep { background: linear-gradient(to top,
-      rgba(5,7,11,0.95) 0%, rgba(5,7,11,0.82) 30%, rgba(5,7,11,0) 62%); }
+      rgba(5,7,11,0.96) 0%, rgba(5,7,11,0.94) 34%, rgba(5,7,11,0.87) 50%,
+      rgba(5,7,11,0.44) 66%, rgba(5,7,11,0) 82%); }
   }
   .hero-sub { color: var(--sc-ink); font-weight: 500; }
 
@@ -336,6 +342,12 @@
      the lede is 607px on one line and the headline's longest line is 455px, so
      nothing rewraps. Scoped to the intro; the engine is the mechanism. */
   #intro .sc-copy--lead { max-width: min(39rem, 76vw); }
+  /* The engine floats the lead copy a fixed distance off the bottom, and the
+     picker was added underneath it without anyone asking whether the two fit.
+     They did not: at 1440x900, 1280x800 and every phone size the lede ran
+     straight into the business name. The floor is measured from the picker
+     itself, so it holds whatever the hint wraps to. */
+  #intro .sc-copy--lead { bottom: max(clamp(3rem, 12vh, 9rem), var(--copy-floor, 9rem)); }
 
   /* ---- the cast ---------------------------------------------------------
      One device comes to the camera and its screen becomes the site. The screen
@@ -810,7 +822,17 @@
       return k;
     }
 
+    /* Keep the lead copy clear of the control beneath it. */
+    function fitCopy() {
+      if (!picker) return;
+      var r = picker.getBoundingClientRect();
+      if (!r.height) return;
+      document.documentElement.style.setProperty('--copy-floor',
+        Math.ceil((innerHeight - r.bottom) + r.height + 22) + 'px');
+    }
+
     function level() {
+      fitCopy();
       if (!axis) return;
       stage.style.setProperty('--lift', '0px');
       var a = axis.getBoundingClientRect();
