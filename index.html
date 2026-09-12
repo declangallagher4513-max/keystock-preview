@@ -1,0 +1,1232 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Keystock · one page, built once, handed over</title>
+<meta name="description" content="One-page websites for local business in Perth. The domain, the hosting and the enquiry form all go in your name. No monthly fee.">
+<!-- This is a working prototype, not the business's live site: the six demo
+     businesses are invented and the enquiry form goes nowhere yet. It must not
+     turn up in a search for a Perth web designer while that is true. Remove
+     this, and the notice above the form, when the form actually sends. -->
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230A0C11'/><rect x='9' y='11' width='14' height='9' rx='1' fill='%23F7F4EC'/></svg>">
+<link rel="stylesheet" href="scrollcraft.css">
+<style>
+  /* Both faces served from this origin. The page makes no third-party requests. */
+  @font-face {
+    font-family: "Gloock";
+    src: url("assets/gloock-latin.woff2") format("woff2");
+    font-weight: 400; font-style: normal; font-display: swap;
+  }
+  @font-face {
+    font-family: "Libre Franklin";
+    src: url("assets/libre-franklin-latin.woff2") format("woff2");
+    font-weight: 400 600; font-style: normal; font-display: swap;
+  }
+
+  /* The world is screens glowing in a dark room, so the ground is deep ink and
+     the accent is light itself. Nothing on this page is coloured except what is
+     inside a screen. The site the intro delivers you into carries the same
+     ground, so arriving is continuous rather than a cut to white. */
+  :root {
+    --sc-canvas:     #0A0C11;
+    --sc-surface:    #141A24;
+    --sc-ink:        #D9D6D0;
+    --sc-ink-soft:   #8A94A2;
+    --sc-accent:     #F7F4EC;
+    --sc-accent-ink: #0B0E13;
+    --sc-font-display: "Gloock", Georgia, serif;
+    --sc-font-text:    "Libre Franklin", "Helvetica Neue", Arial, sans-serif;
+    --line: rgba(217,214,208,0.14);
+  }
+
+  /* Gloock ships one weight and its hairlines thin on a dark ground, so the
+     display face gets the light-on-dark tracking compensation the ramp cannot
+     apply for it. */
+  .sc-display { letter-spacing: -0.012em; }
+
+  /* =====================================================================
+     THE INTRO
+     ===================================================================== */
+
+  /* ---- the wheel --------------------------------------------------------
+     A carousel of devices turning past the camera, each carrying a real
+     rendered page. Frames are drawn rather than photographed: on a true 3D
+     wheel every device is seen at a different angle and a photograph shot at
+     one angle cannot re-angle. No table, no room. The only light is screens. */
+  /* The lift rides on the STAGE, not on the wheel. A translate on the wheel is
+     inside the perspective, so it is magnified by the same ~2x the front device
+     is and a 132px correction moved 275px. Translating the stage moves the
+     projection and its origin together: a rigid shift, 1px for 1px. */
+  /* ---- why the wheel is parameterised this way -------------------------
+     Chrome rasterises each device at its LAYOUT size and then lets the GPU
+     scale that texture by whatever the 3D transform works out to. With the
+     wheel centred on the camera the front device was magnified 2.4x, so every
+     page on the wheel was a 2.4x upsample of a small bitmap -- which is what
+     "the photos look low resolution" was. Raising the source images could not
+     fix it, and did not: the ceiling is the layout size, not the file.
+
+     The fix is to move the whole scene away from the camera by one radius, so
+     the front device sits at z = 0 and is drawn at 1:1, and then scale the
+     scene back up by k = d/(d-r) so it still fills the same space. Every length
+     in here scales together -- lens distance, radius, panel, radius, shadow --
+     because scaling only some of them changes the lens rather than the subject.
+     Shortening the lens instead (d' = d - r) reproduces each device's centre
+     exactly, and was tried, but it is a 478px focal length across a 1155px
+     device: devices ballooned and clipped the viewport as they turned.
+
+     What this trades away is depth. The old wheel got its drama by holding the
+     front device close to the camera, which is the same thing that forced the
+     2.4x upsample; you cannot keep both. Front-to-back size ratio falls from
+     3.8 to 2.2. The blur and dimming written per frame below carry the depth
+     instead, and they are not perspective, so they are unaffected.
+
+     k cannot be computed in CSS -- it divides by a length -- so script sets it
+     from the measured radius; the fallback is the value most laptops land on. */
+  .wheelstage {
+    position: absolute; inset: 0;
+    --r: clamp(24rem, 40vw, 42rem);
+    --k: 2.4;
+    /* The radius in the scaled-up scene. Moving the scene back also throws the
+       side devices wider, which emptied the frame; --spread pulls the ring back
+       in without touching the front device, which stays at z = 0 whatever this
+       is set to. Script overwrites it per viewport -- see gauge() -- because the
+       value that reads well on a laptop piles the devices on top of each other
+       on a phone. This is the no-JS fallback. */
+    --spread: 0.70;
+    --rk: calc(var(--r) * var(--k) * var(--spread));
+    perspective: calc(1150px * var(--k));
+    perspective-origin: 50% 48%;
+    transform: translateY(var(--lift, 0px));
+    pointer-events: none;   /* overridden below: the wheel is draggable */
+  }
+  /* .wheel has none but absolutely-positioned children, so its own box is 0x0
+     and a PERCENTAGE translate on it resolves to zero. A translate(-50%,-57%)
+     here read as a lift and moved nothing. Vertical position is --lift, in px,
+     measured from the live geometry by the axis probe below. */
+  .wheel {
+    position: absolute; left: 50%; top: 50%;
+    transform-style: preserve-3d;
+    transform: translateZ(calc(var(--rk) * -1)) rotateX(-6deg) rotateY(var(--turn, 0deg));
+    will-change: transform;
+  }
+  @media (min-width: 861px) {
+    /* held right of centre so the copy column keeps a clear ground. The offset
+       is applied inside the perspective, so it scales with k like every other
+       length here, or the wheel would slide left as k took effect. */
+    .wheel { transform: translateX(calc(16vw * var(--k))) translateZ(calc(var(--rk) * -1))
+                        rotateX(-6deg) rotateY(var(--turn, 0deg)); }
+  }
+
+  /* Tilting the wheel on X drops whatever is nearest the camera, and perspective
+     then magnifies that drop by about the same factor it magnifies the device:
+     at 1440x900 the front device landed 132px low and the tablet lost 15px off
+     the bottom edge. The amount depends on radius, tilt, viewport and the
+     perspective distance together, so rather than re-derive it in script this
+     zero-size probe sits where the front device sits -- it cancels --turn, so it
+     holds that spot as the wheel rotates -- and script reads back where the
+     browser actually put it. */
+  .wheelaxis {
+    position: absolute; left: 50%; top: 50%; width: 0; height: 0;
+    transform: rotateY(calc(var(--turn, 0deg) * -1)) translateZ(var(--rk));
+  }
+  /* --r is an unregistered custom property, so getComputedStyle hands script the
+     literal text "clamp(24rem, 40vw, 42rem)" rather than a length. Registering
+     it with @property would resolve it, but that is a newer feature than the
+     rest of this page needs, and the radius has to be exact or k is wrong. A
+     box one radius wide is measured instead: the browser resolves the clamp,
+     and it works everywhere. It sits outside .wheel so it never joins the 3D
+     scene. */
+  .wheelruler { position: absolute; top: 0; left: 0; width: var(--r); height: 0; visibility: hidden; }
+
+  .dev {
+    position: absolute; left: 50%; top: 50%;
+    transform: translate(-50%, -50%) rotateY(calc(var(--i) * 60deg)) translateZ(var(--rk));
+    backface-visibility: hidden;
+    transform-style: preserve-3d;
+    pointer-events: auto;
+    /* Depth, written per frame from each device's own facing. Without it every
+       device is equally lit and the wheel reads as scatter rather than as a
+       subject with things behind it. */
+    /* The fallbacks are the FAR state, not the near one. Depth is written per
+       frame by script, and until the first frame runs every device would paint
+       at full opacity with no blur -- including the two near-white pages that
+       sit behind the headline at rest, which measured 1.2:1 against it. Start
+       everything dim and let the frame loop lift whichever device is actually
+       at the front; the lift costs one frame and the alternative is a blown-out
+       wheel on every load. It is also the right state if script never runs. */
+    opacity: var(--depth-o, 0.16);
+    filter: blur(9px) brightness(0.42);   /* overwritten inline per frame: see below */
+  }
+  .dev::before {                       /* the screen's own colour, thrown behind it */
+    content: ""; position: absolute; inset: -22% -18%;
+    /* Not decoration: this is the light the screen throws. --glow is set per
+       device from the top colour of the page on it, and the screens are the only
+       light source in the scene. Remove it and they read as stickers on black. */
+    background: radial-gradient(50% 50% at 50% 50%, var(--glow) 0%, transparent 72%);
+    opacity: 0.5; filter: blur(calc(26px * var(--k))); z-index: -1;
+  }
+
+  /* ---- black glass -------------------------------------------------------
+     What reads as gloss is not the colour of the body, it is the specular on
+     top of it. So the body is near-black and nearly flat, and the work is done
+     by three things above it: a polished edge, a hard highlight that TRAVELS as
+     the device turns, and a much fainter version of that highlight lying over
+     the screen itself. A specular that does not move reads as paint. */
+  .panel {
+    position: relative; overflow: hidden;
+    background: linear-gradient(163deg, #16191F 0%, #080A0D 34%, #050608 58%, #0E1116 100%);
+    box-shadow:
+      0 calc(30px * var(--k)) calc(60px * var(--k)) calc(-18px * var(--k)) rgba(0,0,0,0.9),
+      0 0 0 calc(1px * var(--k)) rgba(255,255,255,0.085) inset,      /* the polished edge */
+      0 calc(1.5px * var(--k)) 0 0 rgba(255,255,255,0.17) inset,     /* top rim catches the light */
+      0 calc(-1.5px * var(--k)) 0 0 rgba(255,255,255,0.055) inset;   /* bounce off the bottom */
+  }
+  /* The hard specular. It sits UNDER .screen, so it only ever shows on the
+     bezel: a bright band across the page itself would undo the legibility the
+     whole wheel exists for. --sheen is the band's position and script moves it
+     from each device's own facing angle, every frame. */
+  .panel::before {
+    content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+    border-radius: inherit;
+    background: linear-gradient(108deg,
+      transparent          calc(var(--sheen, 44%) - 26%),
+      rgba(255,255,255,0.035) calc(var(--sheen, 44%) - 12%),
+      rgba(255,255,255,0.22)  calc(var(--sheen, 44%) - 2%),
+      rgba(255,255,255,0.30)  var(--sheen, 44%),
+      rgba(255,255,255,0.08)  calc(var(--sheen, 44%) + 7%),
+      transparent          calc(var(--sheen, 44%) + 22%));
+  }
+  /* The page used to be clipped by its own border-radius, which ate the logo
+     and menu that phone layouts run into the top corners. The radius now
+     belongs to a screen element whose padding zones carry the page's own top
+     colour, so the corners clip flat colour and the page never reaches them.
+     That is how a real phone avoids it, and the screen keeps its round edge. */
+  .screen {
+    position: relative; z-index: 1;        /* over the bezel specular, under the glass */
+    width: 100%; height: 100%; overflow: hidden;
+    border-radius: var(--screen-r, 5px);
+    background: var(--chrome, #0B0E13);
+    display: flex; flex-direction: column;
+  }
+  .screen img {
+    display: block; width: 100%; flex: 1; min-height: 0;
+    object-fit: cover; object-position: 50% 0;
+  }
+  .is-phone .screen { padding: 5.5% 0 6.8%; position: relative; }
+  .is-phone .screen::after {                 /* home indicator */
+    content: ""; position: absolute; left: 50%; bottom: 2.2%;
+    width: 32%; height: calc(2.5px * var(--k)); border-radius: calc(2px * var(--k));
+    background: rgba(255,255,255,0.30); transform: translateX(-50%);
+  }
+  /* The glass over the screen. Same band, same travel, a fraction of the
+     strength: enough that the page reads as something behind glass rather than
+     printed on the front, and weak enough that the contrast floor is untouched.
+     Measured, not guessed -- see tools/behind.mjs. */
+  .panel::after {
+    content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none;
+    border-radius: inherit;
+    background: linear-gradient(108deg,
+      transparent          calc(var(--sheen, 44%) - 22%),
+      rgba(255,255,255,0.012) calc(var(--sheen, 44%) - 9%),
+      rgba(255,255,255,0.055) var(--sheen, 44%),
+      rgba(255,255,255,0.012) calc(var(--sheen, 44%) + 9%),
+      transparent          calc(var(--sheen, 44%) + 22%));
+  }
+
+  .is-laptop .panel { width: calc(clamp(20rem, 29vw, 30rem) * var(--k)); aspect-ratio: 16 / 10;
+                      border-radius: calc(12px * var(--k)); padding: calc(9px * var(--k)); --screen-r: calc(6px * var(--k)); }
+  .is-tablet .panel { width: calc(clamp(13rem, 18vw, 18rem) * var(--k)); aspect-ratio: 3 / 4;
+                      border-radius: calc(18px * var(--k)); padding: calc(11px * var(--k)); --screen-r: calc(11px * var(--k)); }
+  /* A phone page runs its logo and menu hard into the top corners, so a 17px
+     screen radius ate both. Real phones do not have that problem because the
+     page never occupies the corner: there is a status bar above it and a home
+     indicator below. Giving the panel those two zones clears the radius and
+     reads as more of a phone, not less. */
+  .is-phone  .panel { width: calc(clamp(7.5rem, 10.5vw, 10.5rem) * var(--k)); aspect-ratio: 9 / 19.5;
+                      border-radius: calc(22px * var(--k)); padding: 4%; --screen-r: calc(17px * var(--k)); }
+
+  /* backface-visibility does not cascade through preserve-3d: each child in the
+     3D context needs its own, or the far half of the wheel shows through
+     mirrored. The filter used to flatten this subtree and hide it by accident. */
+  .dev__body { transition: transform 320ms cubic-bezier(0.23,1,0.32,1);
+               transform: rotateX(var(--tx, 0deg)) rotateY(var(--ty, 0deg));
+               backface-visibility: hidden; }
+  .panel { backface-visibility: hidden; }
+  @media (hover: hover) and (pointer: fine) {
+    .dev__body:hover { transform: rotateX(var(--tx, 0deg)) rotateY(var(--ty, 0deg)) translateZ(calc(26px * var(--k))); }
+  }
+  @media (prefers-reduced-motion: reduce) { .dev__body { transition: none; } }
+
+  /* copy column: dense enough that a light page turning behind it cannot wash
+     the type, and nothing else in the frame loses its contrast */
+  .scrim-deep {
+    position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(to right,
+      rgba(5,7,11,0.98) 0%, rgba(5,7,11,0.96) 28%,
+      rgba(5,7,11,0.80) 46%, rgba(5,7,11,0.34) 62%, rgba(5,7,11,0) 80%);
+  }
+  @media (max-width: 860px) {
+    .scrim-deep { background: linear-gradient(to top,
+      rgba(5,7,11,0.95) 0%, rgba(5,7,11,0.82) 30%, rgba(5,7,11,0) 62%); }
+  }
+  .hero-sub { color: var(--sc-ink); font-weight: 500; }
+
+  /* ---- the control ------------------------------------------------------ */
+  .picker {
+    position: absolute; left: 50%; bottom: clamp(1rem, 3.4vh, 2.4rem);
+    transform: translateX(-50%); z-index: 30;
+    display: grid; justify-items: center; gap: 0.6rem;
+    width: min(92vw, 36rem); text-align: center;
+  }
+  .picker::before {          /* its own ground, so a light page cannot wash it */
+    content: ""; position: absolute; inset: -1.4rem -2.5rem -1.6rem;
+    background: radial-gradient(60% 72% at 50% 55%, rgba(5,7,11,0.94) 0%, rgba(5,7,11,0.74) 52%, rgba(5,7,11,0) 100%);
+    z-index: -1; pointer-events: none;
+  }
+  .picker__now { margin: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.1rem 0.6rem;
+                 align-items: baseline; }
+  .picker__now span:first-child { font-size: 0.9rem; font-weight: 600; color: var(--sc-ink); }
+  .picker__what { font-size: 0.78rem; color: var(--sc-ink-soft); }
+  .picker__dots { display: flex; gap: 0.45rem; }
+  /* The bar is a child so the button can be a proper touch target without the
+     mark growing to match, and so the active state is a transform rather than a
+     width: animating width relayouts the row on every frame. */
+  .picker__dot {
+    appearance: none; border: 0; padding: 0; cursor: pointer; background: none;
+    width: 2.6rem; height: 16px; display: grid; align-items: center;
+  }
+  .picker__dot::before {
+    content: ""; display: block; height: 3px; border-radius: 2px;
+    background: rgba(255,255,255,0.26);
+    transform: scaleX(0.52); transform-origin: center;
+    transition: background 200ms ease, transform 340ms cubic-bezier(0.23,1,0.32,1);
+  }
+  .picker__dot:hover::before { background: rgba(255,255,255,0.58); }
+  .picker__dot[aria-current="true"]::before { background: var(--sc-accent); transform: scaleX(1); }
+  .picker__dot:focus-visible { outline: 2px solid var(--sc-accent); outline-offset: 3px; }
+  .picker__hint { margin: 0; font-size: 0.74rem; color: var(--sc-ink-soft);
+                  transition: opacity 500ms ease; }
+  .picker.is-used .picker__hint { opacity: 0; }
+  @media (prefers-reduced-motion: reduce) {
+    .picker__dot, .picker__hint { transition: none; }
+  }
+
+  /* The stage takes the pointer so the wheel can be dragged. pan-y leaves
+     vertical scrolling to the browser and keeps the horizontal for us. */
+  /* Chrome lets you drag an <img> off the page as a file. That native gesture
+     starts on the first pointermove and cancels the pointer stream, which ate
+     every drag here: two moves, then pointercancel, every time, whatever the
+     touch-action or pointer capture said. The screens take no pointer at all
+     now, so the drag belongs to the stage. */
+  .wheelstage { pointer-events: auto; touch-action: pan-y; cursor: grab;
+                user-select: none; -webkit-user-select: none; }
+  .wheelstage img { -webkit-user-drag: none; pointer-events: none; }
+  body.wheel-dragging .wheelstage { cursor: grabbing; }
+  body.wheel-dragging .dev__body { transition: none; }
+  .dev { cursor: pointer; }
+
+  /* The engine caps .sc-copy at 46rem, which is a sensible generic default but
+     112px wider than this block's longest line at every desktop width. That
+     slack sits to the right of the ink, which is exactly where a light page
+     turns past, and a contrast check reads the whole box: it reported 3.22:1
+     over empty background while the type itself was well clear. Narrowing the
+     box to the text makes the reading honest without moving a single glyph --
+     the lede is 607px on one line and the headline's longest line is 455px, so
+     nothing rewraps. Scoped to the intro; the engine is the mechanism. */
+  #intro .sc-copy--lead { max-width: min(39rem, 76vw); }
+
+  /* ---- the cast ---------------------------------------------------------
+     One device comes to the camera and its screen becomes the site. The screen
+     already carries the site's own ground, so there is no cut to white: the
+     bezel simply grows past the frame edge and leaves you inside the page. */
+  /* Centred by coordinates, not by grid alignment. The panel is deliberately
+     wider than the viewport, and centring an overflowing grid item is not
+     reliably symmetric, which showed as the arrival sitting off-centre on a
+     laptop aspect while looking fine on a phone. */
+  .caststage { position: absolute; inset: 0; perspective: 1150px; overflow: hidden; }
+
+  /* Scrubbed, not played: currentTime is written from the act's own progress,
+     so the laptop opens at exactly the pace you scroll. object-fit: cover is
+     safe here because the shot is centred and ends on a uniform surface, so a
+     crop takes nothing from either end. */
+  .castfilm { position: absolute; inset: 0; width: 100%; height: 100%;
+              object-fit: cover; object-position: 50% 50%; display: none; }
+  .castmark { position: absolute; inset: 0; z-index: 2;
+              display: grid; place-content: center; text-align: center;
+              padding: 6%; opacity: 0; pointer-events: none; }
+  body.cast-film .castfilm { display: block; }
+  body.cast-film .castdev  { display: none; }
+  .castdev {
+    position: absolute; left: 50%; top: 50%;
+    transform: translate(-50%, -50%) scale(var(--cast-s, 0.3));
+    transform-origin: 50% 50%;
+    will-change: transform;
+  }
+  /* a lit screen throws light even when the page on it is dark; without this
+     the device reads as a grey slab rather than something switched on */
+  .castdev::before {
+    content: ""; position: absolute; inset: -26% -20%;
+    background: radial-gradient(50% 50% at 50% 50%, #2E4A6B 0%, transparent 70%);
+    opacity: 0.55; filter: blur(30px); z-index: -1;
+  }
+  .castdev .panel { display: grid; place-items: center; }
+  /* Sized at its FINAL size and scaled DOWN to start. will-change promotes this
+     to a compositor layer, and a promoted layer is rasterised once at its
+     current size: scaling one UP enlarges that bitmap and the type on it turns
+     to mush. Scaling down only ever resamples, so the arrival stays sharp. */
+  .castdev.is-laptop .panel { width: max(108vw, 173vh); aspect-ratio: 16 / 10; }
+  .castdev.is-tablet .panel { width: max(108vw, 82vh);  aspect-ratio: 3 / 4; }
+  .castdev.is-phone  .panel { width: max(108vw, 50vh);  aspect-ratio: 9 / 19.5; }
+  .castscreen {
+    position: absolute; inset: 0.7%;
+    border-radius: 0.5%;
+    background: var(--sc-canvas);
+    display: grid; place-items: center; place-content: center; text-align: center;
+    padding: 6%; gap: 0.2rem;
+  }
+  .castscreen__mark {
+    font-family: var(--sc-font-display); margin: 0;
+    font-size: clamp(2rem, 5.5vw, 4.2rem); line-height: 1; color: var(--sc-accent);
+  }
+  .castscreen__line { margin: 0.8em 0 0; font-size: clamp(0.85rem, 1.7vw, 1.05rem);
+                      color: var(--sc-ink-soft); }
+
+  /* =====================================================================
+     THE SITE the intro delivers you into
+     ===================================================================== */
+
+  /* Once you have passed through the intro it is removed from the document, so
+     scrolling back up lands on the site rather than replaying the film. The
+     footer carries a control to put it back. */
+  body.intro-done #intro { display: none; }
+  /* Showing or hiding the intro changes the document by its whole height, and
+     the browser answers by adjusting the scroll to hold the visual position.
+     That adjustment raced the hand-off: pressing replay restored the intro, the
+     anchor threw the scroll 5220px down to compensate, and the hand-off check
+     saw the site above the fold again and immediately took the intro back off.
+     Nothing on this page loads in late, so there is nothing for anchoring to be
+     useful for here. */
+  body { overflow-anchor: none; }
+
+  .nav {
+    position: sticky; top: 0; z-index: 40;
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    padding: 0.9rem clamp(1rem, 5vw, 4rem);
+    background: rgba(10,12,17,0.86);
+    border-bottom: 1px solid var(--line);
+    backdrop-filter: blur(10px);          /* on a fixed element only, never on scrolling content */
+  }
+  .nav__mark { font-family: var(--sc-font-display); font-size: 1.2rem; color: var(--sc-ink); text-decoration: none; }
+  .nav__links { display: flex; align-items: center; gap: clamp(0.9rem, 2.4vw, 2rem); }
+  .nav__links a { font-size: 0.88rem; color: var(--sc-ink-soft); text-decoration: none; }
+  .nav__links a:hover { color: var(--sc-ink); }
+  .nav__cta {
+    background: var(--sc-accent); color: var(--sc-accent-ink) !important;
+    padding: 0.55rem 1.05rem; font-weight: 600; font-size: 0.86rem;
+  }
+  @media (max-width: 620px) { .nav__links .hide-sm { display: none; } }
+
+  .band { padding: clamp(3.5rem, 9vw, 8rem) clamp(1.25rem, 6vw, 6rem); }
+  .band + .band { border-top: 1px solid var(--line); }
+  .band__head { margin: 0 0 clamp(1.6rem, 3vw, 2.6rem); }
+  .band h2 { font-family: var(--sc-font-display); font-weight: 400;
+             font-size: clamp(1.9rem, 4.6vw, 3.2rem); line-height: 1.08; margin: 0; text-wrap: balance;
+             max-width: 22ch; }
+  .band .lede { color: var(--sc-ink-soft); max-width: 56ch; margin: 1rem 0 0; text-wrap: pretty; }
+
+  /* what you get: a ledger, not a grid of identical cards */
+  .gets { display: grid; gap: 0; max-width: 62rem; }
+  .get { display: grid; grid-template-columns: minmax(0, 15rem) 1fr; gap: clamp(0.6rem, 3vw, 3rem);
+         padding: 1.15rem 0; border-top: 1px solid var(--line); align-items: baseline; }
+  .get:last-child { border-bottom: 1px solid var(--line); }
+  .get dt { font-weight: 600; }
+  .get dd { margin: 0; color: var(--sc-ink-soft); }
+  @media (max-width: 620px) { .get { grid-template-columns: 1fr; gap: 0.2rem; } }
+
+  /* how it works: a real sequence, so the order is information. The rule over
+     each step draws itself in order as the section arrives, which is the order
+     being stated rather than described. */
+  .steps { display: grid; gap: clamp(1.6rem, 3vw, 2.4rem); max-width: 64rem;
+           grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+           counter-reset: step; }
+  .step { position: relative; padding-top: 1.1rem;
+          transition: transform 300ms cubic-bezier(0.23,1,0.32,1); }
+  .step::before { content: ""; position: absolute; inset: 0 0 auto; height: 2px; background: var(--line); }
+  .step::after  { content: ""; position: absolute; inset: 0 0 auto 0; height: 2px;
+                  background: var(--sc-accent);
+                  transform: scaleX(0); transform-origin: left;
+                  transition: transform 760ms cubic-bezier(0.23,1,0.32,1);
+                  transition-delay: calc(var(--n, 0) * 120ms); }
+  .step.is-in::after { transform: scaleX(1); }
+  .step h3 { margin: 0 0 0.45rem; font-size: 1.02rem; font-weight: 600;
+             display: flex; gap: 0.6rem; align-items: baseline; }
+  .step h3::before { counter-increment: step; content: counter(step);
+                     font-variant-numeric: tabular-nums; color: var(--sc-accent);
+                     font-size: 0.82rem; letter-spacing: 0.1em; }
+  .step p  { margin: 0; color: var(--sc-ink-soft); font-size: 0.94rem; }
+  @media (hover: hover) and (pointer: fine) { .step:hover { transform: translateY(-4px); } }
+
+  /* Reveal. The class is added by script, never written into the markup, so a
+     page whose script never runs shows everything rather than nothing -- the
+     failure mode that once hid a whole act behind a reduced-motion rule. */
+  .reveal { opacity: 0; transform: translateY(15px);
+            transition: opacity 720ms cubic-bezier(0.23,1,0.32,1),
+                        transform 720ms cubic-bezier(0.23,1,0.32,1);
+            transition-delay: calc(var(--n, 0) * 70ms); }
+  .reveal.is-in { opacity: 1; transform: none; }
+
+  /* nav: says where you are, not just where you can go */
+  .nav__links a { position: relative; padding-bottom: 2px; }
+  .nav__links a:not(.nav__cta)::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: -2px; height: 1px;
+    background: var(--sc-accent); transform: scaleX(0); transform-origin: left;
+    transition: transform 280ms cubic-bezier(0.23,1,0.32,1);
+  }
+  .nav__links a:not(.nav__cta):hover::after,
+  .nav__links a[aria-current="true"]::after { transform: scaleX(1); }
+  .nav__links a[aria-current="true"] { color: var(--sc-ink); }
+  .nav__cta { transition: filter 200ms ease, transform 160ms cubic-bezier(0.23,1,0.32,1); }
+  .nav__cta:hover { filter: brightness(1.08); }
+  .nav__cta:active { transform: translateY(1px); }
+  .band { scroll-margin-top: 5rem; }     /* the sticky nav must not sit on the heading */
+
+  /* form: tells you what is wrong where it is wrong, as you fix it */
+  .field { position: relative; }
+  .field input { transition: border-color 180ms ease, background 180ms ease; }
+  .field input:hover { border-color: var(--sc-ink-soft); }
+  .field input[aria-invalid="true"] { border-color: #D1584E; }
+  .field__err { margin: 0; font-size: 0.8rem; color: #E8877E; min-height: 1em; }
+  .field__err[hidden] { display: none; }
+  .form button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; transition: none; }
+    .step, .step::after, .nav__links a::after, .nav__cta, .picker__dot::before { transition: none; }
+    .step.is-in::after { transform: scaleX(1); }
+  }
+
+  /* what you own */
+  .owns { display: grid; gap: clamp(1rem, 2.4vw, 1.6rem); max-width: 62rem;
+          grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); }
+  .own { background: var(--sc-surface); padding: clamp(1.1rem, 2.4vw, 1.6rem);
+         border: 1px solid var(--line); }
+  .own b { display: block; font-size: 1.02rem; margin-bottom: 0.35rem; }
+  .own span { color: var(--sc-ink-soft); font-size: 0.92rem; }
+  .own em { display: block; margin-top: 0.7rem; font-style: normal;
+            font-size: 0.76rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sc-accent); }
+
+  /* the form */
+  .form { display: grid; gap: 1rem; max-width: 34rem; }
+  .field { display: grid; gap: 0.4rem; }
+  .field label { font-size: 0.84rem; color: var(--sc-ink-soft); }
+  .field input {
+    background: transparent; color: var(--sc-ink);
+    border: 1px solid var(--line); padding: 0.8rem 0.9rem; font: inherit; font-size: 1rem;
+  }
+  .field input:focus-visible { border-color: var(--sc-accent); }
+  .form button {
+    justify-self: start; background: var(--sc-accent); color: var(--sc-accent-ink);
+    border: 0; padding: 0.85rem 1.6rem; font: inherit; font-weight: 600; cursor: pointer;
+    transition: transform 140ms cubic-bezier(0.23,1,0.32,1);
+  }
+  .form button:active { transform: translateY(1px); }
+  .form__note { margin: 0; font-size: 0.86rem; color: var(--sc-ink-soft); max-width: 46ch; }
+  .form__said { margin: 0; padding: 0.9rem 1rem; border: 1px solid var(--sc-accent);
+                color: var(--sc-ink); font-size: 0.92rem; }
+  /* Says so before they type, not after they have handed over a phone number. */
+  .form__proto { margin: 0; padding: 0.85rem 1rem; font-size: 0.88rem;
+                 color: var(--sc-ink); background: rgba(255,255,255,0.04);
+                 border-left: 2px solid var(--sc-accent); max-width: 46ch; }
+  .form__said[hidden] { display: none; }
+
+  .foot { padding: 2rem clamp(1.25rem, 6vw, 6rem) 3rem; border-top: 1px solid var(--line);
+          display: flex; flex-wrap: wrap; gap: 0.8rem 2rem; justify-content: space-between;
+          font-size: 0.84rem; color: var(--sc-ink-soft); align-items: center; }
+  .replay { background: none; border: 1px solid var(--line); color: var(--sc-ink-soft);
+            font: inherit; font-size: 0.82rem; padding: 0.5rem 0.9rem; cursor: pointer; }
+  .replay:hover { color: var(--sc-ink); border-color: var(--sc-ink-soft); }
+
+  @media (max-width: 700px) {
+    /* portrait is its own composition, not the desktop wheel shrunk */
+    .wheel { transform: translateZ(calc(var(--rk) * -1)) rotateX(-4deg) rotateY(var(--turn, 0deg)); }
+    .wheelstage { --r: clamp(15rem, 62vw, 22rem);   /* on the stage: perspective and the probe both read it */
+                  --spread: 1.30; }                 /* no-JS fallback; gauge() derives the real one */
+    .is-laptop .panel { width: calc(74vw * var(--k)); }
+    .is-tablet .panel { width: calc(46vw * var(--k)); }
+    .is-phone  .panel { width: calc(27vw * var(--k)); }
+  }
+</style>
+</head>
+<body>
+
+<span data-sc-progress></span>
+<div class="sc-grain" aria-hidden="true"></div>
+
+<div id="intro">
+<main id="top">
+
+  <!-- THE WHEEL -->
+  <section data-sc-act="pin" data-sc-span="3.2" data-sc-drift="#0A0C11">
+    <div data-sc-stage>
+      <div class="wheelstage" aria-hidden="true">
+        <i class="wheelruler" id="wheelruler"></i>
+        <div class="wheel" id="wheel">
+          <i class="wheelaxis" id="wheelaxis" aria-hidden="true"></i>
+          <div class="dev is-laptop" style="--i:0; --glow:#7A4322; --chrome:#2A1B14" data-name="Ridgeline Coffee Roasters" data-what="coffee roaster, Fremantle">
+            <div class="dev__body"><div class="panel"><div class="screen"><img draggable="false" src="assets/screen-ridgeline-coffee.webp" width="2400" height="1500" alt=""></div></div></div>
+          </div>
+          <div class="dev is-phone" style="--i:1; --glow:#C8352E; --chrome:#0E0E10" data-name="Sharp &amp; Sons" data-what="barber, Leederville">
+            <div class="dev__body"><div class="panel"><div class="screen"><img draggable="false" src="assets/screen-sharp-barbers.webp" width="1170" height="2532" alt=""></div></div></div>
+          </div>
+          <div class="dev is-laptop" style="--i:2; --glow:#E4DCC6; --chrome:#F4F3EF" data-name="Halden &amp; Co." data-what="builder, Claremont">
+            <div class="dev__body"><div class="panel"><div class="screen"><img draggable="false" src="assets/screen-halden-builders.webp" width="2400" height="1500" alt=""></div></div></div>
+          </div>
+          <div class="dev is-tablet" style="--i:3; --glow:#6B2E4E; --chrome:#2B1430" data-name="Wildform" data-what="florist, Mount Lawley">
+            <div class="dev__body"><div class="panel"><div class="screen"><img draggable="false" src="assets/screen-wildform-florist.webp" width="1560" height="2080" alt=""></div></div></div>
+          </div>
+          <div class="dev is-phone" style="--i:4; --glow:#F5A623; --chrome:#0D1B2E" data-name="Voltmark Electrical" data-what="electrician, Wanneroo">
+            <div class="dev__body"><div class="panel"><div class="screen"><img draggable="false" src="assets/screen-voltmark-electrical.webp" width="1170" height="2532" alt=""></div></div></div>
+          </div>
+          <div class="dev is-laptop" style="--i:5; --glow:#9FC2AE; --chrome:#E8EDE7" data-name="Meridian Physiotherapy" data-what="physiotherapist, Subiaco">
+            <div class="dev__body"><div class="panel"><div class="screen"><img draggable="false" src="assets/screen-meridian-physio.webp" width="2400" height="1500" alt=""></div></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="scrim-deep" aria-hidden="true"></div>
+
+      <!-- The wheel itself is decorative and aria-hidden, so it cannot be the
+           control. This is: real buttons, focusable, labelled, and it works
+           whether or not the visitor ever discovers that the wheel drags. -->
+      <div class="picker" id="picker">
+        <p class="picker__now"><span id="pickername">Ridgeline Coffee Roasters</span><span class="picker__what" id="pickerwhat">coffee roaster, Fremantle</span></p>
+        <div class="picker__dots" id="pickerdots" role="group" aria-label="Choose a demo site">
+          <button class="picker__dot" type="button" data-i="0" aria-current="true" aria-label="Ridgeline Coffee Roasters, coffee roaster, Fremantle"></button>
+          <button class="picker__dot" type="button" data-i="1" aria-label="Sharp &amp; Sons, barber, Leederville"></button>
+          <button class="picker__dot" type="button" data-i="2" aria-label="Halden &amp; Co., builder, Claremont"></button>
+          <button class="picker__dot" type="button" data-i="3" aria-label="Wildform, florist, Mount Lawley"></button>
+          <button class="picker__dot" type="button" data-i="4" aria-label="Voltmark Electrical, electrician, Wanneroo"></button>
+          <button class="picker__dot" type="button" data-i="5" aria-label="Meridian Physiotherapy, physiotherapist, Subiaco"></button>
+        </div>
+        <p class="picker__hint" id="pickerhint">Drag the wheel, or use the arrow keys</p>
+      </div>
+      <div class="sc-copy sc-copy--lead" data-sc-cue="0 0.72 0">
+        <h1 class="sc-display sc-display--xl" data-sc-kinetic="lines">Built once. Handed over. Yours.</h1>
+        <p class="sc-body hero-sub">One-page websites for local business in Perth. No monthly fee, no lock-in.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- THE CAST -->
+  <section id="cast" data-sc-act="pin" data-sc-span="2.6" data-sc-drift="#0A0C11">
+    <div data-sc-stage>
+      <div class="caststage" aria-hidden="true">
+        <!-- The film is scrubbed, never played: a laptop opens, turns, and the
+             camera closes on its screen until the black glass fills the frame.
+             It is 16:9, so it only stands in on a landscape viewport; narrow
+             screens keep the CSS device below until the other ratios exist. -->
+        <video class="castfilm" id="castfilm" src="assets/cast-laptop.mp4"
+               muted playsinline preload="auto" disablepictureinpicture
+               aria-hidden="true"></video>
+        <!-- The same two lines as .castscreen. They are duplicated rather than
+             shared because the CSS device grows its screen and the type has to
+             grow with it, while over the film the type simply arrives. Both
+             sit inside an aria-hidden stage, so nothing is announced twice.
+             Collapses to one when the other two ratios are filmed. -->
+        <div class="castmark" id="castmark">
+          <p class="castscreen__mark">Keystock</p>
+          <p class="castscreen__line">Built once. Handed over. Yours.</p>
+        </div>
+        <div class="castdev is-laptop" id="castdev">
+          <div class="panel">
+            <div class="castscreen">
+              <p class="castscreen__mark">Keystock</p>
+              <p class="castscreen__line">Built once. Handed over. Yours.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="sc-copy sc-copy--lead" data-sc-cue="0.02 0.4">
+        <h2 class="sc-display sc-display--lg" data-sc-kinetic="lines">One price. Nothing after it.</h2>
+      </div>
+    </div>
+  </section>
+
+</main>
+</div>
+
+<!-- ===================== the site ===================== -->
+<div id="site">
+  <span id="sitetop" aria-hidden="true"></span>
+
+  <nav class="nav">
+    <a class="nav__mark" href="#sitetop">Keystock</a>
+    <span class="nav__links">
+      <a class="hide-sm" href="#get">What you get</a>
+      <a class="hide-sm" href="#how">How it works</a>
+      <a class="nav__cta" href="#ask">Get a preview</a>
+    </span>
+  </nav>
+
+  <section class="band" id="get">
+    <div class="band__head">
+      <h2>One page, and everything on it earns its place.</h2>
+      <p class="lede">Most of your customers arrive on a phone, having searched your trade and your suburb. They want four things, and a second page is where those four go to hide.</p>
+    </div>
+    <dl class="gets">
+      <div class="get"><dt>Who you are</dt><dd>Your name, your trade, your suburb, in the first line.</dd></div>
+      <div class="get"><dt>How to reach you</dt><dd>Tap to call. Not a form they have to fill in to get your number.</dd></div>
+      <div class="get"><dt>When you are open</dt><dd>Real hours, including the ones you are not.</dd></div>
+      <div class="get"><dt>Proof you are real</dt><dd>Your licence number, your photographs, your address on a map.</dd></div>
+      <div class="get"><dt>An enquiry form</dt><dd>Sending to your inbox, through an account in your name.</dd></div>
+    </dl>
+  </section>
+
+  <section class="band" id="how">
+    <div class="band__head">
+      <h2>We build it before you decide.</h2>
+      <p class="lede">You do not brief us, wait, and hope. The order is the other way round.</p>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <h3>We build your page</h3>
+        <p>From what is already public about your business. You have not spoken to us yet and it costs you nothing.</p>
+      </div>
+      <div class="step">
+        <h3>You look at it</h3>
+        <p>A real page at a real address, on your phone. If it is wrong, it is wrong for free.</p>
+      </div>
+      <div class="step">
+        <h3>You decide</h3>
+        <p>One price, paid once, for the design and the build. No retainer and nothing to cancel.</p>
+      </div>
+      <div class="step">
+        <h3>We hand it over</h3>
+        <p>Together, on a screen-share. You create the accounts and set the passwords. We deploy into them.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="own">
+    <div class="band__head">
+      <h2>Nothing it depends on belongs to us.</h2>
+      <p class="lede">This is the part that makes the one-off price honest. Three accounts, all opened in your name, with you setting the password on each.</p>
+    </div>
+    <div class="owns">
+      <div class="own"><b>The domain</b><span>Registered to you. You can point it anywhere, any time, without asking us.</span><em>In your name</em></div>
+      <div class="own"><b>The hosting</b><span>Your account. If you never speak to us again the site stays up.</span><em>In your name</em></div>
+      <div class="own"><b>The enquiry form</b><span>Your inbox, your relay. We are not in the middle of your customers.</span><em>In your name</em></div>
+    </div>
+  </section>
+
+  <section class="band" id="ask">
+    <div class="band__head">
+      <h2>Tell us what your shop is called.</h2>
+      <p class="lede">That is genuinely all we need to start. We will find the rest and build the page.</p>
+    </div>
+    <form class="form" id="askform" novalidate>
+      <p class="form__proto">This is a preview of a site we are still building.
+        The form below is not connected yet, so nothing you type into it is sent,
+        stored, or seen by anyone.</p>
+      <div class="field">
+        <label for="shop">Business name</label>
+        <input id="shop" name="shop" type="text" autocomplete="organization" required>
+        <p class="field__err" id="shop-err" hidden></p>
+      </div>
+      <div class="field">
+        <label for="suburb">Suburb</label>
+        <input id="suburb" name="suburb" type="text" autocomplete="address-level2" required>
+        <p class="field__err" id="suburb-err" hidden></p>
+      </div>
+      <div class="field">
+        <label for="contact">Phone or email</label>
+        <input id="contact" name="contact" type="text" autocomplete="tel" required>
+        <p class="field__err" id="contact-err" hidden></p>
+      </div>
+      <button type="submit">Get a preview</button>
+      <p class="form__said" id="said" hidden role="status"></p>
+      <p class="form__note">Free to look, and there is nothing to cancel if you decide against it.</p>
+    </form>
+  </section>
+
+  <footer class="foot">
+    <span>Keystock, Perth WA</span>
+    <button class="replay" id="replay" type="button">Play the intro again</button>
+  </footer>
+</div>
+
+<script src="scrollcraft.js"></script>
+<script>
+  ScrollCraft.mount(document.body);
+
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- the wheel ------------------------------------------------------
+     Six devices 60deg apart. Turning a full 360 would bring the first device
+     back to the front, showing its page twice, so the travel is five gaps. */
+  (function () {
+    var wheel = document.getElementById('wheel');
+    if (!wheel) return;
+    var act = wheel.closest('[data-sc-act]');
+    if (!act) return;
+    var devs = [].slice.call(wheel.querySelectorAll('.dev'));
+    var dragP = 0, lastP = -1;         // progress contributed by an active drag
+    var axis = document.getElementById('wheelaxis');
+    var stage = wheel.parentNode;
+    var RAD = Math.PI / 180, raf = 0;
+
+    /* Put the front of the wheel on the vertical centre of its stage. Read, do
+       not calculate: the probe is already subject to the same perspective,
+       radius and tilt as the device that will sit there, so the browser has
+       done the arithmetic. Only the viewport can change the answer. */
+    /* k = d / (d - r), the factor that keeps the picture identical while moving
+       the front device to z = 0 so it rasterises at full resolution. CSS cannot
+       divide by a length, so it is computed here from the resolved radius. */
+    var D = 1150, ruler = document.getElementById('wheelruler');
+    function gauge() {
+      var r = ruler ? ruler.getBoundingClientRect().width : 0;
+      if (!r || r >= D) return parseFloat(getComputedStyle(stage).getPropertyValue('--k')) || 1;
+      var k = D / (D - r);
+      stage.style.setProperty('--k', k.toFixed(4));
+
+      /* Devices sit 60deg apart, so the chord between neighbours is exactly one
+         radius. A device wider than that radius runs into the one beside it.
+         The radius and the panel widths come from different clamps, so their
+         ratio moves with the viewport and no single hand-set spread holds: 0.70
+         is right on a laptop and stacks the devices 99% on top of each other on
+         a phone, and the value that fixes the phone empties the laptop. Derive
+         it from the geometry instead. The k in the panel width cancels against
+         the k in the radius, so this is really base width over radius. */
+      var widest = 0;
+      for (var i = 0; i < devs.length; i++) {
+        var pan = devs[i].querySelector('.panel');
+        if (pan && pan.offsetWidth > widest) widest = pan.offsetWidth;
+      }
+      if (widest) {
+        stage.style.setProperty('--spread',
+          Math.max(0.70, 1.10 * (widest / k) / r).toFixed(3));
+      }
+      return k;
+    }
+
+    function level() {
+      if (!axis) return;
+      stage.style.setProperty('--lift', '0px');
+      var a = axis.getBoundingClientRect();
+      var s = stage.getBoundingClientRect();
+      stage.style.setProperty('--lift', Math.round((s.top + s.height / 2) - a.top) + 'px');
+    }
+
+    function frame() {
+      raf = 0;
+      /* Scroll is the source of truth, plus whatever an in-progress drag is
+         adding on top of it. The drag deliberately does NOT move the document:
+         calling scrollTo inside pointermove makes the browser decide the scroll
+         has claimed the gesture, and it answers with pointercancel one move in.
+         So a drag turns the wheel directly and commits to a scroll position on
+         release, when there is no pointer stream left to cancel. */
+      var p = parseFloat(getComputedStyle(act).getPropertyValue('--sc-p')) || 0;
+      p = Math.max(0, Math.min(1, p + dragP));
+      var turn = -p * 300;
+      wheel.style.setProperty('--turn', turn.toFixed(2) + 'deg');
+
+      /* Things further away are smaller, softer and lower contrast. Perspective
+         gives the scale; these are the other two. */
+      for (var i = 0; i < devs.length; i++) {
+        var t = (Math.cos((i * 60 + turn) * RAD) + 1) / 2;
+        devs[i].style.setProperty('--depth-o', (0.16 + 0.84 * t * t).toFixed(3));
+        /* A filter, even a no-op one, promotes the element to a layer that is
+           rasterised once and then scaled by perspective, which is what was
+           softening the page you are actually looking at. The near ones get
+           none at all; the far ones can afford it because they are blurred. */
+        devs[i].style.filter = t > 0.88 ? 'none'
+          : 'blur(' + ((1 - t) * 4.5 * K).toFixed(2) + 'px) brightness(' + (0.42 + 0.58 * t).toFixed(3) + ')';
+
+        /* Gloss. The light is fixed in the scene, so the reflection travels
+           across a device as that device turns past it -- which is the whole
+           reason it reads as glass and not as a painted-on streak. */
+        var face = (i * 60 + turn) * RAD;
+        devs[i].style.setProperty('--sheen', (48 + Math.sin(face) * 44).toFixed(1) + '%');
+      }
+      mark(Math.round(p * STEPS));
+
+      /* The engine eases --sc-p toward the scroll position over many frames, and
+         scroll events stop well before it settles. Without this the wheel would
+         stop wherever the last scroll event left it and finish the ease without
+         being redrawn. */
+      if (Math.abs(p - lastP) > 0.0002) { lastP = p; schedule(); }
+    }
+    function schedule() { if (!raf) raf = requestAnimationFrame(frame); }
+
+    /* ---- the wheel as a control ---------------------------------------
+       Turn is a pure function of how far you are through the act, so every way
+       of driving it -- scrolling, dragging, the dots, the arrow keys -- goes
+       through the scroll position. One source of truth, and the arrival at the
+       end of the act keeps working no matter which one you used. */
+    var STEPS = devs.length - 1;                 // five gaps, not six
+    var dots = [].slice.call(document.querySelectorAll('.picker__dot'));
+    var picker = document.getElementById('picker');
+    var nameEl = document.getElementById('pickername');
+    var whatEl = document.getElementById('pickerwhat');
+    var at = -1;
+
+    function mark(i) {
+      i = Math.max(0, Math.min(STEPS, i));
+      if (i === at) return;
+      at = i;
+      for (var d = 0; d < dots.length; d++) {
+        if (d === i) dots[d].setAttribute('aria-current', 'true');
+        else dots[d].removeAttribute('aria-current');
+      }
+      var dev = devs[i];
+      if (dev && nameEl) nameEl.innerHTML = dev.getAttribute('data-name') || '';
+      if (dev && whatEl) whatEl.textContent = dev.getAttribute('data-what') || '';
+    }
+
+    function span() {
+      var r = act.getBoundingClientRect();
+      return { top: r.top + scrollY, range: Math.max(1, act.offsetHeight - innerHeight) };
+    }
+    function used() { if (picker) picker.classList.add('is-used'); }
+    function goTo(i, smooth) {
+      i = Math.max(0, Math.min(STEPS, i));
+      var s = span();
+      scrollTo({ top: s.top + (i / STEPS) * s.range, behavior: (smooth && !reduce) ? 'smooth' : 'instant' });
+      used();
+    }
+
+    dots.forEach(function (b) {
+      b.addEventListener('click', function () { goTo(parseInt(b.getAttribute('data-i'), 10), true); });
+    });
+
+    var dotbox = document.getElementById('pickerdots');
+    if (dotbox) dotbox.addEventListener('keydown', function (e) {
+      var d = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1
+            : e.key === 'ArrowLeft'  || e.key === 'ArrowUp'   ? -1
+            : e.key === 'Home' ? -99 : e.key === 'End' ? 99 : 0;
+      if (!d) return;
+      e.preventDefault();
+      var next = Math.max(0, Math.min(STEPS, d === -99 ? 0 : d === 99 ? STEPS : at + d));
+      goTo(next, true);
+      if (dots[next]) dots[next].focus();
+    });
+
+    /* Drag. A full viewport width of travel is worth two devices, which is
+       about the pace a thumb expects from a carousel. touch-action: pan-y on
+       the stage leaves vertical scrolling to the browser and keeps horizontal
+       for this. */
+    var drag = null;
+    function basis() { return parseFloat(getComputedStyle(act).getPropertyValue('--sc-p')) || 0; }
+    stage.addEventListener('pointerdown', function (e) {
+      if (e.button !== undefined && e.button !== 0) return;
+      if (e.target.closest('.picker')) return;
+      drag = { x: e.clientX, y: e.clientY, moved: 0, id: e.pointerId };
+      dragP = 0;
+      try { stage.setPointerCapture(e.pointerId); } catch (err) {}
+      document.body.classList.add('wheel-dragging');
+    });
+    stage.addEventListener('pointermove', function (e) {
+      if (!drag || e.pointerId !== drag.id) return;
+      var dx = e.clientX - drag.x;
+      drag.moved = Math.max(drag.moved, Math.abs(dx), Math.abs(e.clientY - drag.y));
+      dragP = -dx / Math.max(1, innerWidth) * 0.4;
+      used();
+      schedule();
+    });
+    function endDrag(e) {
+      if (!drag || (e && e.pointerId !== drag.id)) return;
+      var wasDrag = drag.moved > 6;
+      try { stage.releasePointerCapture(drag.id); } catch (err) {}
+      drag = null;
+      document.body.classList.remove('wheel-dragging');
+      if (!wasDrag) { dragP = 0; schedule(); return; }
+      /* Commit: the wheel is already showing basis + dragP, so snapping to the
+         nearest device and zeroing the drag moves it only by the snap itself. */
+      var landed = Math.round(Math.max(0, Math.min(1, basis() + dragP)) * STEPS);
+      dragP = 0;
+      goTo(landed, false);
+    }
+    stage.addEventListener('pointerup', endDrag);
+    stage.addEventListener('pointercancel', endDrag);
+
+    /* Click a device to bring it to the front. Suppressed after a real drag so
+       letting go does not also count as a tap. */
+    devs.forEach(function (d, i) {
+      d.addEventListener('click', function () {
+        if (drag && drag.moved > 6) return;
+        goTo(i, true);
+      });
+    });
+
+    addEventListener('scroll', schedule, { passive: true });
+    var K = gauge();
+    addEventListener('resize', function () { K = gauge(); level(); schedule(); });
+    level();
+    schedule();
+
+    if (reduce || !matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+    [].forEach.call(wheel.querySelectorAll('.dev__body'), function (b) {
+      b.addEventListener('pointermove', function (e) {
+        var r = b.getBoundingClientRect();
+        if (!r.width || !r.height) return;
+        b.style.setProperty('--ty', (((e.clientX - r.left) / r.width - 0.5) * 15).toFixed(2) + 'deg');
+        b.style.setProperty('--tx', ((0.5 - (e.clientY - r.top) / r.height) * 11).toFixed(2) + 'deg');
+      });
+      b.addEventListener('pointerleave', function () {
+        b.style.setProperty('--ty', '0deg'); b.style.setProperty('--tx', '0deg');
+      });
+    });
+  })();
+
+  /* ---- the cast: cast-to-your-device ----------------------------------
+     The device class is chosen from this visitor's own viewport, and it grows
+     until its bezel is past the frame edge, leaving you inside a screen that
+     already carries the site's ground. There is no cut to white because there
+     is no white: the screen was always the page. */
+  (function () {
+    var dev = document.getElementById('castdev');
+    var act = document.getElementById('cast');
+    if (!dev || !act) return;
+
+    var w = innerWidth;
+    dev.className = 'castdev ' + (w < 700 ? 'is-phone' : w < 1024 ? 'is-tablet' : 'is-laptop');
+
+    var film = document.getElementById('castfilm');
+    var mark = document.getElementById('castmark');
+
+    /* The film is a 16:9 laptop. It stands in for the arrival only where that
+       shape belongs -- a landscape viewport -- and reduced motion keeps the
+       quiet CSS version. The other two ratios are not filmed yet. */
+    var useFilm = !!film && w >= 860 && innerWidth >= innerHeight && !reduce;
+    if (useFilm) document.body.classList.add('cast-film');
+
+    /* The film finishes here and the last fifth of the act belongs to the
+       wordmark arriving on the screen the film has just filled the frame with.
+       They overlap: the mark starts before the push-in has quite stopped, so
+       one becomes the other rather than the film ending and something else
+       beginning. */
+    var FILM_END = 0.82, MARK_IN = 0.74, MARK_FULL = 0.94;
+
+    var raf = 0, warmed = false;
+    function frame() {
+      raf = 0;
+      var p = parseFloat(getComputedStyle(act).getPropertyValue('--sc-p')) || 0;
+
+      if (useFilm) {
+        var d = film.duration;
+        if (d && isFinite(d)) {
+          /* A frame is 1/24s; seeking to anything finer just wakes the decoder
+             for a picture nobody can see. */
+          var t = Math.min(1, p / FILM_END) * (d - 1 / 48);
+          if (Math.abs(film.currentTime - t) > 1 / 48) film.currentTime = t;
+        }
+        mark.style.opacity =
+          Math.max(0, Math.min(1, (p - MARK_IN) / (MARK_FULL - MARK_IN))).toFixed(3);
+        return;
+      }
+
+      var e = 1 - Math.pow(1 - p, 2.6);         // exponential ease out
+      /* The panel is already viewport-covering, so the end of the move is
+         scale 1 and the start is whatever puts it at about wheel size. */
+      var panel = dev.querySelector('.panel');
+      var start = Math.min(0.5, 430 / (panel.offsetWidth || 1));
+      dev.style.setProperty('--cast-s', (start + e * (1 - start)).toFixed(4));
+    }
+    function schedule() { if (!raf) raf = requestAnimationFrame(frame); }
+    addEventListener('scroll', schedule, { passive: true });
+    addEventListener('resize', schedule);
+
+    if (useFilm) {
+      /* Some browsers will not decode a frame for a video that has never been
+         told to play, however much you seek it. One muted play-and-pause is
+         enough to wake the decoder; it is never allowed to actually run. */
+      function warm() {
+        if (warmed) return; warmed = true;
+        var pr = film.play();
+        if (pr && pr.then) pr.then(function () { film.pause(); }, function () {});
+        else film.pause();
+      }
+      film.addEventListener('loadedmetadata', schedule);
+      film.addEventListener('seeked', function () { film.pause(); });
+      addEventListener('scroll', warm, { passive: true, once: true });
+      addEventListener('pointerdown', warm, { once: true });
+      if (film.readyState >= 1) schedule();
+    }
+    schedule();
+  })();
+
+  /* ---- arriving -------------------------------------------------------
+     Once the site's top reaches the top of the viewport the intro leaves the
+     document, so scrolling back up lands on the site rather than rewinding the
+     film. The swap happens at the one scroll position where both layouts put
+     the site's top in the same place, so nothing jumps. */
+  (function () {
+    var site = document.getElementById('site');
+    var replay = document.getElementById('replay');
+    if (!site) return;
+
+    /* This watched a zero-height <span> with an IntersectionObserver, and a
+       zero-area target can never produce a non-empty intersection rectangle:
+       the callback fired once, isIntersecting false, and never again. So the
+       intro was never removed and scrolling back up always replayed the film.
+       A scroll position is not ambiguous, so read that instead. */
+    var swapping = false;
+    function check() {
+      if (swapping) return;
+      if (document.body.classList.contains('intro-done')) return;
+      var top = site.getBoundingClientRect().top;
+      if (top > 0) return;
+      document.body.classList.add('intro-done');
+      /* Hiding the intro pulls the site up by the intro's whole height. Scroll
+         by exactly how far into the site we already were, so the hand-off lands
+         on the same pixel instead of throwing you to the top of the page. */
+      scrollTo({ top: Math.max(0, Math.round(-top)), behavior: 'instant' });
+    }
+    addEventListener('scroll', check, { passive: true });
+    addEventListener('resize', check);
+    check();
+
+    if (replay) replay.addEventListener('click', function () {
+      swapping = true;                       /* stand the check down for the swap */
+      document.body.classList.remove('intro-done');
+      scrollTo({ top: 0, behavior: 'instant' });
+      requestAnimationFrame(function () {
+        scrollTo({ top: 0, behavior: 'instant' });
+        requestAnimationFrame(function () { swapping = false; });
+      });
+    });
+  })();
+
+  /* ---- reveal ----------------------------------------------------------
+     The class is applied here rather than in the markup so that a page whose
+     script never runs shows its content instead of hiding all of it -- which is
+     exactly how a reduced-motion rule once blanked a whole act. */
+  (function () {
+    /* Two different jobs, and only one of them may touch text.
+
+       The steps animate their RULE, which is a pseudo-element carrying no
+       content, so their words are never gated on anything: if the observer
+       never fires you lose a line drawing, not the page. Only the section
+       headings actually fade, and repeated rows and form fields do not move at
+       all -- revealing those as well put 48% of a phone's text at opacity 0 at
+       rest, which is the failed-reveal signature however careful the handler. */
+    var fade = [].slice.call(document.querySelectorAll('#site .band__head'));
+    var draw = [].slice.call(document.querySelectorAll('#site .step'));
+    fade.forEach(function (el, i) { el.style.setProperty('--n', i % 6); el.classList.add('reveal'); });
+    draw.forEach(function (el, i) { el.style.setProperty('--n', i % 6); });
+    var seen = fade.concat(draw);
+    if (!seen.length) return;
+    if (reduce || !('IntersectionObserver' in window)) {
+      seen.forEach(function (el) { el.classList.add('is-in'); });
+      return;
+    }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (!en.isIntersecting) return;
+        en.target.classList.add('is-in');
+        io.unobserve(en.target);          // arriving is a one-way trip
+      });
+    }, { rootMargin: '0px 0px -4% 0px', threshold: 0.05 });
+    seen.forEach(function (el) { io.observe(el); });
+  })();
+
+  /* ---- nav: smooth to the section, and say which one you are in ---------
+     The engine sets html { scroll-behavior: smooth } for the whole page, so a
+     bare scrollTo animates whether or not you wanted it to. Everything here
+     that is a jump rather than a journey -- the intro hand-off, the replay, the
+     snap when you let go of the wheel -- passes behavior: 'instant' and says
+     why. Only this one is a journey. */
+  (function () {
+    var links = [].slice.call(document.querySelectorAll('.nav__links a[href^="#"]'));
+    var nav = document.querySelector('.nav');
+    if (!links.length) return;
+
+    links.forEach(function (a) {
+      a.addEventListener('click', function (e) {
+        var el = document.getElementById(a.getAttribute('href').slice(1));
+        if (!el) return;
+        e.preventDefault();
+        var pad = (nav ? nav.offsetHeight : 0) + 12;
+        scrollTo({ top: el.getBoundingClientRect().top + scrollY - pad,
+                   behavior: reduce ? 'instant' : 'smooth' });
+        if (history.replaceState) history.replaceState(null, '', a.getAttribute('href'));
+      });
+    });
+
+    var sections = links.map(function (a) { return document.getElementById(a.getAttribute('href').slice(1)); });
+    if (!('IntersectionObserver' in window)) return;
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        var i = sections.indexOf(en.target);
+        if (i < 0) return;
+        if (en.isIntersecting) links[i].setAttribute('aria-current', 'true');
+        else links[i].removeAttribute('aria-current');
+      });
+    }, { rootMargin: '-45% 0px -45% 0px' });
+    sections.forEach(function (el) { if (el) io.observe(el); });
+  })();
+
+  /* ---- the form -------------------------------------------------------
+     Validates for real, per field, and only starts complaining once you have
+     had a go at a field -- telling someone a box is empty before they have
+     reached it is noise. It does not pretend to send: the submission endpoint
+     is phase two and claiming receipt would be a lie. */
+  (function () {
+    var form = document.getElementById('askform');
+    var said = document.getElementById('said');
+    if (!form || !said) return;
+    var fields = [].slice.call(form.querySelectorAll('input[required]'));
+    var live = false;                         // becomes true once they submit
+
+    function why(el) {
+      var v = el.value.trim();
+      if (!v) return 'We need this one.';
+      if (el.id === 'contact') {
+        /* Count the digits rather than look for a run of them: people write
+           "0412 555 018" and "(08) 9451 2345", and a run-of-six test rejects
+           both. Eight digits is the shortest real Australian number. */
+        var digits = v.replace(/[^0-9]/g, '');
+        if (digits.length < 8 && !/^[^@s]+@[^@s]+.[^@s]+$/.test(v))
+          return 'A phone number or an email address.';
+        return '';
+      }
+      if (v.length < 2) return 'That looks too short.';
+      return '';
+    }
+    function show(el, force) {
+      var err = document.getElementById(el.id + '-err');
+      var msg = why(el);
+      var on = !!msg && (force || live || el.dataset.touched === '1');
+      el.setAttribute('aria-invalid', on ? 'true' : 'false');
+      if (err) {
+        err.textContent = on ? msg : '';
+        err.hidden = !on;
+        if (on) el.setAttribute('aria-describedby', err.id);
+        else el.removeAttribute('aria-describedby');
+      }
+      return !msg;
+    }
+
+    fields.forEach(function (el) {
+      el.addEventListener('blur', function () { el.dataset.touched = '1'; show(el); });
+      el.addEventListener('input', function () { if (live || el.dataset.touched === '1') show(el); });
+    });
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      live = true;
+      var bad = fields.filter(function (el) { return !show(el, true); });
+      if (bad.length) {
+        said.hidden = false;
+        said.textContent = bad.length === 1 ? 'One field still needs you.' : bad.length + ' fields still need you.';
+        bad[0].focus();
+        return;
+      }
+      said.hidden = false;
+      said.textContent = 'This is a prototype: the form is not connected yet, so nothing was sent.';
+    });
+  })();
+</script>
+</body>
+</html>
