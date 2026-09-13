@@ -446,7 +446,9 @@
   .band h2 { font-family: var(--sc-font-display); font-weight: 400;
              font-size: clamp(1.9rem, 4.6vw, 3.2rem); line-height: 1.08; margin: 0; text-wrap: balance;
              max-width: 22ch; }
-  .band .lede { color: var(--sc-ink-soft); max-width: 56ch; margin: 1rem 0 0; text-wrap: pretty; }
+  /* 56ch measured 694px here and rendered 79 characters a line -- inside the
+     limit by one character, which is not inside it. See the note on .qa > p. */
+  .band .lede { color: var(--sc-ink-soft); max-width: 38rem; margin: 1rem 0 0; text-wrap: pretty; }
 
   /* what you get: a ledger, not a grid of identical cards */
   .gets { display: grid; gap: 0; max-width: 62rem; }
@@ -548,10 +550,72 @@
   .form__said { margin: 0; padding: 0.9rem 1rem; border: 1px solid var(--sc-accent);
                 color: var(--sc-ink); font-size: 0.92rem; }
   /* Says so before they type, not after they have handed over a phone number. */
+  .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
   .form__proto { margin: 0; padding: 0.85rem 1rem; font-size: 0.88rem;
                  color: var(--sc-ink); background: rgba(255,255,255,0.04);
                  border-left: 2px solid var(--sc-accent); max-width: 46ch; }
   .form__said[hidden] { display: none; }
+
+  /* ---- preview retrieval -------------------------------------------------
+     A slim strip rather than a band: it is the first thing one kind of visitor
+     wants and invisible to everyone else. */
+  .strip { padding: clamp(1rem, 2.4vw, 1.6rem) clamp(1.25rem, 6vw, 6rem);
+           border-bottom: 1px solid var(--line); background: var(--sc-surface); }
+  .strip__form { display: grid; gap: 0.5rem; max-width: 42rem; }
+  .strip__lab { font-size: 0.9rem; color: var(--sc-ink); }
+  .strip__row { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .strip__row input {
+    flex: 1 1 15rem; min-width: 0; background: transparent; color: var(--sc-ink);
+    border: 1px solid var(--line); padding: 0.6rem 0.8rem; font: inherit; font-size: 0.95rem;
+    font-variant-ligatures: none; transition: border-color 180ms ease;
+  }
+  .strip__row input:hover { border-color: var(--sc-ink-soft); }
+  .strip__row input:focus-visible { border-color: var(--sc-accent); }
+  .strip__row input[aria-invalid="true"] { border-color: #D1584E; }
+  .strip__row button {
+    background: transparent; color: var(--sc-ink); border: 1px solid var(--sc-ink-soft);
+    padding: 0.6rem 1.1rem; font: inherit; font-size: 0.9rem; cursor: pointer;
+    transition: background 180ms ease, color 180ms ease;
+  }
+  .strip__row button:hover { background: var(--sc-ink); color: var(--sc-canvas); }
+  .strip__err { margin: 0; font-size: 0.82rem; color: #E8877E; }
+  .strip__err[hidden] { display: none; }
+
+  /* ---- the questions ----------------------------------------------------
+     <details> rather than a scripted accordion: it opens with script off, the
+     keyboard already works, and the browser handles the semantics. */
+  .faq { max-width: 60rem; border-top: 1px solid var(--line); }
+  .qa { border-bottom: 1px solid var(--line); }
+  .qa > summary {
+    list-style: none; cursor: pointer; padding: 1.1rem 2.5rem 1.1rem 0;
+    position: relative; font-size: 1.02rem; font-weight: 600; color: var(--sc-ink);
+  }
+  .qa > summary::-webkit-details-marker { display: none; }
+  .qa > summary:focus-visible { outline: 2px solid var(--sc-accent); outline-offset: 3px; }
+  .qa > summary::after {
+    content: ""; position: absolute; right: 0.4rem; top: 50%;
+    width: 9px; height: 9px; margin-top: -6px;
+    border-right: 1.5px solid var(--sc-accent); border-bottom: 1.5px solid var(--sc-accent);
+    transform: rotate(45deg); transform-origin: 50% 50%;
+    transition: transform 240ms cubic-bezier(0.23,1,0.32,1);
+  }
+  .qa[open] > summary::after { transform: rotate(-135deg); margin-top: -2px; }
+  /* Not ch. The unit is the width of "0", and Libre Franklin's digits are much
+     wider than its lowercase, so 62ch measured 768px and rendered ~85 characters
+     a line -- over the limit while looking like it had been set under it. */
+  .qa > p { margin: 0 0 1.2rem; color: var(--sc-ink-soft); max-width: 40rem; text-wrap: pretty; }
+  @media (hover: hover) and (pointer: fine) { .qa > summary:hover { color: var(--sc-accent); } }
+  @media (prefers-reduced-motion: reduce) {
+    .qa > summary::after, .strip__row input, .strip__row button { transition: none; }
+  }
+
+  /* what happens after you press the button */
+  .next { margin: 0.4rem 0 0; padding: 0; list-style: none; counter-reset: nx;
+          display: grid; gap: 0.55rem; max-width: 46ch; }
+  .next li { position: relative; padding-left: 1.9rem; font-size: 0.9rem; color: var(--sc-ink-soft); }
+  .next li::before { counter-increment: nx; content: counter(nx);
+                     position: absolute; left: 0; top: 0; color: var(--sc-accent);
+                     font-size: 0.78rem; letter-spacing: 0.1em; font-variant-numeric: tabular-nums; }
 
   .foot { padding: 2rem clamp(1.25rem, 6vw, 6rem) 3rem; border-top: 1px solid var(--line);
           display: flex; flex-wrap: wrap; gap: 0.8rem 2rem; justify-content: space-between;
@@ -681,6 +745,23 @@
     </span>
   </nav>
 
+  <!-- Someone who just had a text from us already has a page. The hub holds no
+       record of who they are: preview projects are named preview-<10 hex> by
+       deploy-demo.js precisely so the business name is not in the URL, which
+       means the code is the address and this needs no lookup, no database and
+       nothing Google-derived in this repo. -->
+  <section class="strip" id="yours">
+    <form class="strip__form" id="codeform">
+      <label class="strip__lab" for="code">Had a text from us? Your page is already built.</label>
+      <span class="strip__row">
+        <input id="code" name="code" type="text" inputmode="latin" autocomplete="off"
+               spellcheck="false" placeholder="preview-8f2c1a90d3" aria-describedby="code-err">
+        <button type="submit">Open my page</button>
+      </span>
+      <p class="strip__err" id="code-err" role="status" hidden></p>
+    </form>
+  </section>
+
   <section class="band" id="get">
     <div class="band__head">
       <h2>One page, and everything on it earns its place.</h2>
@@ -732,6 +813,43 @@
     </div>
   </section>
 
+  <section class="band" id="faq">
+    <div class="band__head">
+      <h2>The questions people actually ask.</h2>
+      <p class="lede">Mostly about the catch. There is not one, but that is exactly what someone with a catch would say, so here is the detail.</p>
+    </div>
+    <div class="faq">
+      <details class="qa">
+        <summary>I never asked for this. Why is there already a page for my business?</summary>
+        <p>Because it is quicker to show you than to describe it. We build from what is already public about your business, before we have spoken to you. It costs you nothing and commits you to nothing. If you are not interested, ignore us and nothing happens to it.</p>
+      </details>
+      <details class="qa">
+        <summary>What does it cost?</summary>
+        <p>One payment, once, for the design and the build. No retainer, no monthly fee, nothing that renews. We quote the number when we send you the page, so you are looking at the real thing and the real price at the same time rather than agreeing to one before you have seen the other.</p>
+      </details>
+      <details class="qa">
+        <summary>What if I look at it and do not want it?</summary>
+        <p>Then you say no and that is the end of it. You have not paid anything, there is no account to close and nothing to cancel. The page comes down.</p>
+      </details>
+      <details class="qa">
+        <summary>If I stop paying you, does my site disappear?</summary>
+        <p>There is nothing to stop paying. The domain, the hosting and the enquiry form are all opened in your name, with you setting the password on each. If you never speak to us again the site stays up, because none of it runs through us.</p>
+      </details>
+      <details class="qa">
+        <summary>Can I change it later, or am I stuck with you?</summary>
+        <p>You own the files and the accounts, so you can change it yourself, ask us, or hand it to somebody else entirely. We are not holding anything you would have to come back for.</p>
+      </details>
+      <details class="qa">
+        <summary>Why only one page? Everyone else sells five.</summary>
+        <p>Most people arrive on a phone, having searched your trade and your suburb. They want to know who you are, how to reach you, when you are open and whether you are real. A second page is where those four answers go to hide. One page that answers them beats five that bury them.</p>
+      </details>
+      <details class="qa">
+        <summary>I already have a website.</summary>
+        <p>Then the question is whether it does those four things on a phone, quickly. If it does, keep it — we will say so. If it is slow, hard to change, or costing you every month for something you cannot edit, that is the case for replacing it.</p>
+      </details>
+    </div>
+  </section>
+
   <section class="band" id="ask">
     <div class="band__head">
       <h2>Tell us what your shop is called.</h2>
@@ -743,7 +861,7 @@
         stored, or seen by anyone.</p>
       <div class="field">
         <label for="shop">Business name</label>
-        <input id="shop" name="shop" type="text" autocomplete="organization" required>
+        <input id="shop" name="business_name" type="text" autocomplete="organization" required>
         <p class="field__err" id="shop-err" hidden></p>
       </div>
       <div class="field">
@@ -756,9 +874,15 @@
         <input id="contact" name="contact" type="text" autocomplete="tel" required>
         <p class="field__err" id="contact-err" hidden></p>
       </div>
+      <p class="hp" aria-hidden="true"><label>Leave this empty<input name="company_url" tabindex="-1" autocomplete="off"></label></p>
       <button type="submit">Get a preview</button>
       <p class="form__said" id="said" hidden role="status"></p>
       <p class="form__note">Free to look, and there is nothing to cancel if you decide against it.</p>
+      <ol class="next">
+        <li>We build your page from what is already public about your business.</li>
+        <li>We send you a link to the finished thing, with the price.</li>
+        <li>You decide. Nothing happens until you do.</li>
+      </ol>
     </form>
   </section>
 
@@ -1189,6 +1313,42 @@
     sections.forEach(function (el) { if (el) io.observe(el); });
   })();
 
+  /* ---- preview retrieval ----------------------------------------------
+     The code is the whole address. deploy-demo.js names preview projects
+     preview-<10 hex> so the business name never appears in the URL, which also
+     means this needs no lookup table: nothing about any prospect is stored
+     here, and nothing Google-derived enters this repo. */
+  (function () {
+    var form = document.getElementById('codeform');
+    if (!form) return;
+    var input = document.getElementById('code');
+    var err = document.getElementById('code-err');
+
+    function fail(msg) {
+      err.textContent = msg; err.hidden = false;
+      input.setAttribute('aria-invalid', 'true'); input.focus();
+    }
+    input.addEventListener('input', function () {
+      err.hidden = true; input.removeAttribute('aria-invalid');
+    });
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      /* It arrives in a text message and gets retyped or pasted, so take it
+         however it comes: the whole URL, with the prefix, or ten bare
+         characters with spaces through them. */
+      var v = (input.value || '').toLowerCase();
+      var m = v.match(/preview-([0-9a-f]{10})/);
+      var hex = m ? m[1] : v.replace(/[^0-9a-f]/g, '');
+      if (!hex) return fail(v.trim()
+        ? 'Those characters are not right: the code is digits and the letters a to f.'
+        : 'Paste the code from the text message.');
+      if (hex.length !== 10) return fail('That should be ten characters, like 8f2c1a90d3.');
+      err.hidden = true; input.removeAttribute('aria-invalid');
+      open('https://preview-' + hex + '.pages.dev/', '_blank', 'noopener');
+    });
+  })();
+
   /* ---- the form -------------------------------------------------------
      Validates for real, per field, and only starts complaining once you have
      had a go at a field -- telling someone a box is empty before they have
@@ -1245,9 +1405,39 @@
         bad[0].focus();
         return;
       }
-      said.hidden = false;
-      said.textContent = 'This is a prototype: the form is not connected yet, so nothing was sent.';
+      send();
     });
+
+    /* Posts to our own origin, so the page still makes no third-party request.
+       It tells the truth about what happened: a form that says "thanks" when
+       nothing left the browser is worse than one that says it failed. */
+    function send() {
+      var btn = form.querySelector('button[type=submit]');
+      var body = {};
+      [].forEach.call(form.querySelectorAll('input[name]'), function (i) { body[i.name] = i.value.trim(); });
+      said.hidden = false;
+      said.textContent = 'Sending…';
+      btn.disabled = true;
+      fetch('api/enquiry', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+      }).then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, status: r.status, j: j }; });
+      }).then(function (res) {
+        if (res.ok) {
+          said.textContent = res.j.message || 'Got it. We will build your page and send you the link.';
+          form.reset();
+          fields.forEach(function (el) { el.removeAttribute('aria-invalid'); delete el.dataset.touched;
+            var e2 = document.getElementById(el.id + '-err'); if (e2) { e2.hidden = true; e2.textContent = ''; } });
+          live = false;
+          return;
+        }
+        said.textContent = res.status === 404
+          ? 'Nothing was sent: the form is not connected on this address yet.'
+          : (res.j.message || 'That did not send. Please try again in a moment.');
+      }).catch(function () {
+        said.textContent = 'That did not send — it looks like the connection dropped. Nothing was lost; try again.';
+      }).then(function () { btn.disabled = false; });
+    }
   })();
 </script>
 </body>
