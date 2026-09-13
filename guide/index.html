@@ -1,0 +1,669 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The owner's guide · Keystock</title>
+<meta name="description" content="What you own, what happens on handover day, and how to change your own website. Written for people who do not work in websites.">
+<!-- Prototype: the demo businesses on the main page are invented and the
+     enquiry form is not connected. Comes off with those two. -->
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230A0C11'/><rect x='9' y='11' width='14' height='9' rx='1' fill='%23F7F4EC'/></svg>">
+<style>
+  /* Both faces from this origin. No third-party requests on this page either. */
+  @font-face {
+    font-family: "Gloock";
+    src: url("../assets/gloock-latin.woff2") format("woff2");
+    font-weight: 400; font-style: normal; font-display: swap;
+  }
+  @font-face {
+    font-family: "Libre Franklin";
+    src: url("../assets/libre-franklin-latin.woff2") format("woff2");
+    font-weight: 400 600; font-style: normal; font-display: swap;
+  }
+
+  :root {
+    --canvas: #08090b;
+    --surface: #101217;
+    --ink: #f4f2ef;
+    --soft: #9a9ba1;
+    --accent: #d8ff3e;
+    --accent-ink: #08090b;
+    --line: rgba(217,214,208,0.14);
+    --line-firm: rgba(217,214,208,0.26);
+    --ours: #6ea8ff;
+    --display: Gloock, Georgia, "Times New Roman", serif;
+    --body: "Libre Franklin", "Segoe UI", system-ui, -apple-system, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+  body {
+    margin: 0; background: var(--canvas); color: var(--ink);
+    font-family: var(--body); font-size: 1.0625rem; line-height: 1.65;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  .skip {
+    position: absolute; left: -9999px; top: 0; z-index: 100;
+    background: var(--accent); color: var(--accent-ink);
+    padding: 0.7rem 1.1rem; font-weight: 600; text-decoration: none;
+  }
+  .skip:focus { left: 0; }
+
+  a { color: inherit; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  /* ---- masthead ---- */
+  .top {
+    border-bottom: 1px solid var(--line);
+    padding: clamp(1.6rem, 5vw, 3.4rem) clamp(1.25rem, 5vw, 3rem) clamp(1.4rem, 4vw, 2.6rem);
+  }
+  .top__back { display: inline-block; font-size: 0.9rem; color: var(--soft);
+               text-decoration: none; margin-bottom: 1.4rem; }
+  .top__back:hover { color: var(--ink); }
+  .top h1 {
+    font-family: var(--display); font-weight: 400; margin: 0;
+    font-size: clamp(2.1rem, 6vw, 3.6rem); line-height: 1.05; letter-spacing: -0.015em;
+    max-width: 20ch;
+  }
+  .top p { margin: 1rem 0 0; color: var(--soft); max-width: 34rem; }
+
+  /* ---- layout ---- */
+  .shell {
+    display: grid; gap: clamp(1.5rem, 4vw, 3.5rem);
+    padding: clamp(1.6rem, 4vw, 3rem) clamp(1.25rem, 5vw, 3rem) 5rem;
+    align-items: start;
+  }
+  @media (min-width: 900px) {
+    .shell { grid-template-columns: 16rem minmax(0, 46rem); }
+  }
+
+  /* ---- contents ---- */
+  .toc { position: sticky; top: 1rem; font-size: 0.95rem; }
+  .toc__h { font-size: 0.8rem; letter-spacing: 0.16em; text-transform: uppercase;
+            color: var(--soft); margin: 0 0 0.8rem; }
+  .toc ol { list-style: none; margin: 0; padding: 0; counter-reset: toc; }
+  .toc li { margin: 0; }
+  .toc a {
+    display: block; padding: 0.42rem 0 0.42rem 2rem; position: relative;
+    color: var(--soft); text-decoration: none; border-left: 1px solid var(--line);
+    transition: color 160ms ease, border-color 160ms ease;
+  }
+  .toc a::before {
+    counter-increment: toc; content: counter(toc);
+    position: absolute; left: 0.85rem; color: var(--soft);
+    font-size: 0.78rem; font-variant-numeric: tabular-nums;
+  }
+  .toc a:hover { color: var(--ink); }
+  .toc a[aria-current="true"] { color: var(--ink); border-left-color: var(--accent); }
+  .toc a[aria-current="true"]::before { color: var(--accent); }
+  @media (prefers-reduced-motion: reduce) { .toc a { transition: none; } }
+
+  /* the contents collapse on a phone, where a sticky list would eat the screen */
+  @media (max-width: 899px) {
+    .toc { position: static; border: 1px solid var(--line); border-radius: 2px; }
+    .toc > summary {
+      list-style: none; cursor: pointer; padding: 0.9rem 1rem;
+      font-size: 0.78rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--soft);
+    }
+    .toc > summary::-webkit-details-marker { display: none; }
+    .toc ol { padding: 0 1rem 0.8rem; }
+  }
+  @media (min-width: 900px) {
+    .toc > summary { display: none; }
+    .toc > .toc__h, .toc > nav { display: block; }   /* regardless of [open] */
+  }
+
+  /* ---- sections ---- */
+  section { scroll-margin-top: 1.5rem; }
+  section + section { margin-top: clamp(3rem, 7vw, 5rem); }
+  h2 {
+    font-family: var(--display); font-weight: 400; margin: 0 0 0.9rem;
+    font-size: clamp(1.6rem, 4vw, 2.3rem); line-height: 1.12; letter-spacing: -0.01em;
+  }
+  h3 { margin: 2.2rem 0 0.6rem; font-size: 1.08rem; font-weight: 600; }
+  p { margin: 0 0 1rem; max-width: 34rem; text-wrap: pretty; }
+  .lede { color: var(--soft); }
+  strong { font-weight: 600; }
+
+  /* ---- who does what ---- */
+  .split { border-top: 1px solid var(--line); margin: 1.6rem 0 0; }
+  .split__row { display: grid; gap: 0.2rem 1.2rem; padding: 0.9rem 0;
+                border-bottom: 1px solid var(--line); }
+  @media (min-width: 620px) { .split__row { grid-template-columns: 1fr 9rem; align-items: baseline; } }
+  .split__what { margin: 0; max-width: none; }
+  .split__who { margin: 0; font-size: 0.82rem; letter-spacing: 0.08em; text-transform: uppercase; }
+  .split__who[data-who="us"]  { color: var(--ours); }
+  .split__who[data-who="you"] { color: var(--accent); }
+
+  /* ---- steps ---- */
+  .steps { margin: 1.6rem 0 0; padding: 0; list-style: none; counter-reset: step; }
+  .step { position: relative; padding: 0 0 1.6rem 3.1rem; }
+  .step::before {
+    counter-increment: step; content: counter(step);
+    position: absolute; left: 0; top: -0.1rem;
+    width: 2rem; height: 2rem; border-radius: 50%;
+    border: 1px solid var(--line-firm); color: var(--accent);
+    display: grid; place-items: center; font-size: 0.86rem; font-variant-numeric: tabular-nums;
+  }
+  .step::after {
+    content: ""; position: absolute; left: 1rem; top: 2.2rem; bottom: 0;
+    border-left: 1px solid var(--line);
+  }
+  .step:last-child::after { display: none; }
+  .step h3 { margin: 0.2rem 0 0.4rem; font-size: 1rem; font-weight: 600; }
+  .step p { margin: 0 0 0.7rem; }
+  .step p:last-child { margin-bottom: 0; }
+
+  /* ---- figures ------------------------------------------------------------
+     Drawn here rather than screenshotted. Two reasons: a picture of somebody
+     else's dashboard is out of date the next time they redesign it, and a
+     schematic says where to look without pretending to be the thing itself.
+     Each one is sized to be swapped for a real screenshot later. */
+  .fig { margin: 0 0 1.2rem; }
+  .fig__frame {
+    border: 1px solid var(--line-firm); border-radius: 3px; background: var(--surface);
+    overflow: hidden;
+  }
+  .fig__bar {
+    display: flex; align-items: center; gap: 0.4rem;
+    padding: 0.5rem 0.7rem; border-bottom: 1px solid var(--line);
+    background: rgba(255,255,255,0.02);
+  }
+  .fig__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--line-firm); }
+  .fig__addr { margin-left: 0.5rem; font-size: 0.8rem; color: var(--soft);
+               font-variant-ligatures: none; }
+  .fig__body { padding: 1.1rem; display: grid; gap: 0.7rem; }
+  .fig__label { font-size: 0.78rem; color: var(--soft); }
+  .fig__field {
+    border: 1px solid var(--line); border-radius: 2px; padding: 0.6rem 0.7rem;
+    font-size: 0.88rem; color: var(--soft); background: rgba(0,0,0,0.2);
+  }
+  .fig__field[data-fill] { color: var(--ink); }
+  .fig__btn {
+    justify-self: start; background: var(--accent); color: var(--accent-ink);
+    padding: 0.5rem 1rem; font-size: 0.86rem; font-weight: 600; border-radius: 2px;
+  }
+  .fig__btn[data-ghost] { background: transparent; color: var(--ink);
+                          border: 1px solid var(--line-firm); }
+  .fig__mark {
+    display: inline-block; border: 1px dashed var(--accent); border-radius: 2px;
+    padding: 0.3rem 0.5rem; color: var(--accent); font-size: 0.78rem;
+  }
+  .fig figcaption { margin-top: 0.6rem; font-size: 0.85rem; color: var(--soft); max-width: 34rem; }
+
+  /* ---- callouts ---- */
+  .note {
+    margin: 1.4rem 0; padding: 0.9rem 1.1rem; background: rgba(255,255,255,0.035);
+    border-left: 2px solid var(--accent); font-size: 0.95rem;
+  }
+  .note p { margin: 0; max-width: 32rem; }
+  .note p + p { margin-top: 0.6rem; }
+  .note[data-kind="watch"] { border-left-color: #E8877E; }
+  .note__h { display: block; font-weight: 600; margin-bottom: 0.25rem; }
+
+  /* ---- plain lists ---- */
+  .plain { margin: 0 0 1rem; padding-left: 1.2rem; max-width: 34rem; }
+  .plain li { margin: 0 0 0.45rem; }
+  .plain li::marker { color: var(--soft); }
+
+  /* ---- trouble ---- */
+  .trouble { margin: 1.4rem 0 0; border-top: 1px solid var(--line); }
+  .trouble details { border-bottom: 1px solid var(--line); }
+  .trouble summary {
+    list-style: none; cursor: pointer; padding: 1rem 2.4rem 1rem 0; position: relative;
+    font-weight: 600; font-size: 1rem;
+  }
+  .trouble summary::-webkit-details-marker { display: none; }
+  .trouble summary::after {
+    content: ""; position: absolute; right: 0.4rem; top: 50%; margin-top: -6px;
+    width: 9px; height: 9px;
+    border-right: 1.5px solid var(--accent); border-bottom: 1.5px solid var(--accent);
+    transform: rotate(45deg); transition: transform 220ms cubic-bezier(0.23,1,0.32,1);
+  }
+  .trouble details[open] summary::after { transform: rotate(-135deg); margin-top: -2px; }
+  .trouble p { margin: 0 0 1rem; }
+  @media (prefers-reduced-motion: reduce) { .trouble summary::after { transition: none; } }
+
+  /* ---- foot ---- */
+  .foot {
+    border-top: 1px solid var(--line); padding: 2rem clamp(1.25rem, 5vw, 3rem) 3rem;
+    color: var(--soft); font-size: 0.9rem;
+    display: flex; flex-wrap: wrap; gap: 0.6rem 2rem; justify-content: space-between;
+  }
+  .foot a { color: var(--soft); }
+  .foot a:hover { color: var(--ink); }
+
+  /* People do print things like this and stick them in a drawer. */
+  @media print {
+    body { background: #fff; color: #000; font-size: 11pt; }
+    .toc, .skip, .top__back, .foot { display: none; }
+    .shell { display: block; padding: 0; }
+    section { break-inside: avoid; }
+    .trouble details { break-inside: avoid; }
+    .trouble details > *:not(summary) { display: block !important; }
+    .fig__frame, .note { border: 1px solid #bbb; background: #fff; }
+    a { text-decoration: underline; }
+  }
+</style>
+</head>
+<body>
+
+<a class="skip" href="#guide">Skip to the guide</a>
+
+<header class="top">
+  <a class="top__back" href="../">&larr; Keystock</a>
+  <h1>The owner's guide</h1>
+  <p>What you end up owning, what happens on the day we hand it over, and how to change
+     your own website afterwards. Written for people who do not work in websites.</p>
+</header>
+
+<div class="shell">
+
+  <details class="toc" id="toc">
+    <summary>Contents</summary>
+    <p class="toc__h">Contents</p>
+    <nav aria-label="Contents">
+      <ol>
+        <li><a href="#who">Who does what</a></li>
+        <li><a href="#own">What you end up owning</a></li>
+        <li><a href="#ready">Before we start</a></li>
+        <li><a href="#domain">Your domain name</a></li>
+        <li><a href="#hosting">Your hosting</a></li>
+        <li><a href="#form">Your enquiry form</a></li>
+        <li><a href="#edit">Changing your site</a></li>
+        <li><a href="#working">Keeping it working</a></li>
+        <li><a href="#wrong">If something looks wrong</a></li>
+        <li><a href="#leaving">Taking it somewhere else</a></li>
+      </ol>
+    </nav>
+  </details>
+
+  <main id="guide">
+
+    <section id="who">
+      <h2>Who does what</h2>
+      <p class="lede">Almost all of this is ours. Your part is short, and none of it needs
+        any technical knowledge — but it cannot be skipped, because it is the part that
+        makes everything yours instead of ours.</p>
+
+      <div class="split">
+        <div class="split__row"><p class="split__what">Designing and building the site</p><p class="split__who" data-who="us">We do it</p></div>
+        <div class="split__row"><p class="split__what">Choosing and checking a domain name is free</p><p class="split__who" data-who="us">We do it</p></div>
+        <div class="split__row"><p class="split__what">Paying for the domain</p><p class="split__who" data-who="you">Yours</p></div>
+        <div class="split__row"><p class="split__what">Your ABN, for a <em>.com.au</em> name</p><p class="split__who" data-who="you">Yours</p></div>
+        <div class="split__row"><p class="split__what">Filling in the sign-up forms for all three accounts</p><p class="split__who" data-who="us">We do it</p></div>
+        <div class="split__row"><p class="split__what">Clicking the confirmation link in each email</p><p class="split__who" data-who="you">Yours</p></div>
+        <div class="split__row"><p class="split__what">Connecting the domain, the hosting and the form together</p><p class="split__who" data-who="us">We do it</p></div>
+        <div class="split__row"><p class="split__what">Putting the site live and testing it</p><p class="split__who" data-who="us">We do it</p></div>
+        <div class="split__row"><p class="split__what">Setting your own password on each account</p><p class="split__who" data-who="you">Yours</p></div>
+      </div>
+
+      <div class="note">
+        <p><span class="note__h">Your whole job, in one line</span>
+          Give us an email address and an ABN, click three confirmation links, and choose
+          three passwords. Everything else on this page is us.</p>
+      </div>
+    </section>
+
+    <section id="own">
+      <h2>What you end up owning</h2>
+      <p>Three accounts and a folder of files. All three accounts are in your name, with
+        your email on them and a password only you know.</p>
+
+      <ul class="plain">
+        <li><strong>Your domain name.</strong> The address people type. Around $20&ndash;30 a
+          year, paid by you to the registrar. Nobody else can take it while it is renewed.</li>
+        <li><strong>Your hosting.</strong> Where the site actually sits. Free at the size of a
+          one-page site, and it stays free.</li>
+        <li><strong>Your enquiry form.</strong> The thing that emails you when somebody fills
+          in the contact form. It sends to your inbox, through an account in your name.</li>
+        <li><strong>The files.</strong> The website itself, and your photographs.</li>
+      </ul>
+
+      <p>There is nothing to renew with us and no account of ours that your site depends on.
+        If you never speak to us again, it stays up.</p>
+    </section>
+
+    <section id="ready">
+      <h2>Before we start</h2>
+      <p class="lede">Three things to have on hand before the call. It takes about half an
+        hour altogether, and most of that is us typing.</p>
+
+      <h3>An email address you will still have in five years</h3>
+      <p>This is the important one. Every account gets built on it, and it is how you prove
+        the domain is yours if anything is ever disputed. A personal address you have had
+        for years is better than a new one made for the business, and far better than one
+        that belongs to an internet provider you might leave.</p>
+
+      <h3>Your ABN, if you want a .com.au name</h3>
+      <p>Australian rules require whoever holds a <em>.com.au</em> to have an active ABN or ACN
+        connected to the name, and it has to stay active for as long as you hold the domain.
+        A sole trader's personal ABN is fine. We cannot use ours — the rules require it to be
+        the business the name belongs to.</p>
+
+      <div class="note">
+        <p><span class="note__h">No ABN?</span>
+          Two options, both fine. Applying for one is free and takes about fifteen minutes on
+          the Australian Business Register. Or we use a <em>.com</em> instead, which has no
+          eligibility rules at all and costs about the same.</p>
+      </div>
+
+      <h3>A card, for the domain</h3>
+      <p>The domain is the one thing with a running cost, and it needs to be on your card so
+        the renewal is yours and never lapses because of us. It is the only payment detail
+        anyone will ask you for.</p>
+    </section>
+
+    <section id="domain">
+      <h2>Your domain name</h2>
+      <p class="lede">The address people type to reach you. We check what is available and
+        fill in the form; you pay and confirm.</p>
+
+      <ol class="steps">
+        <li class="step">
+          <h3>We find you a name that is free</h3>
+          <p>Before the call. Usually your business name and suburb in some combination. We
+            will bring you two or three that are available so you are choosing, not hoping.</p>
+        </li>
+        <li class="step">
+          <h3>We fill in the registration</h3>
+          <p>Your business name, your ABN, your email, your address. You are listed as the
+            owner of the name — that is the part that matters, and it is why we need your
+            details rather than ours.</p>
+          <figure class="fig">
+            <div class="fig__frame">
+              <div class="fig__bar"><span class="fig__dot"></span><span class="fig__dot"></span><span class="fig__dot"></span><span class="fig__addr">your registrar &middot; new domain</span></div>
+              <div class="fig__body">
+                <span class="fig__label">Registrant name</span>
+                <div class="fig__field" data-fill>Your business name</div>
+                <span class="fig__label">ABN</span>
+                <div class="fig__field" data-fill>Your ABN</div>
+                <span class="fig__label">Email</span>
+                <div class="fig__field" data-fill>The address you gave us</div>
+                <span class="fig__mark">Check these three are yours, not ours</span>
+              </div>
+            </div>
+            <figcaption>The only screen worth reading carefully. If any of those three say
+              anything other than your business, stop us.</figcaption>
+          </figure>
+        </li>
+        <li class="step">
+          <h3>You pay</h3>
+          <p>Your card, about $20&ndash;30 for the year. Turn <strong>auto-renew on</strong> while
+            you are there. It is the single most useful switch on this page.</p>
+        </li>
+        <li class="step">
+          <h3>You click the confirmation email</h3>
+          <p>The registrar emails the address you gave us to check it is real. Click the link.
+            If it does not arrive within a few minutes, look in spam.</p>
+        </li>
+      </ol>
+
+      <div class="note" data-kind="watch">
+        <p><span class="note__h">The one thing that can really go wrong</span>
+          If the domain lapses, the site goes dark and somebody else can buy your name. That
+          is why auto-renew goes on now and why the card should be one that will not expire
+          and be forgotten. Put a yearly reminder in your phone as well.</p>
+      </div>
+    </section>
+
+    <section id="hosting">
+      <h2>Your hosting</h2>
+      <p class="lede">Where the site actually lives. Free at this size, and it is an account
+        in your name so we can hand it over and step away.</p>
+
+      <ol class="steps">
+        <li class="step">
+          <h3>We create the account on your email</h3>
+          <p>On the call, so you can see it happening. We use a temporary password that you
+            will replace in a minute.</p>
+        </li>
+        <li class="step">
+          <h3>You click the confirmation email</h3>
+          <p>Same as before: they email you to check the address is real.</p>
+          <figure class="fig">
+            <div class="fig__frame">
+              <div class="fig__bar"><span class="fig__dot"></span><span class="fig__dot"></span><span class="fig__dot"></span><span class="fig__addr">your inbox</span></div>
+              <div class="fig__body">
+                <span class="fig__label">From your new host</span>
+                <div class="fig__field" data-fill>Please confirm your email address</div>
+                <span class="fig__btn" data-ghost>Confirm email</span>
+                <span class="fig__mark">One click, then back to us</span>
+              </div>
+            </div>
+            <figcaption>Two of these arrive during the call, one for hosting and one for the
+              form. They look almost identical.</figcaption>
+          </figure>
+        </li>
+        <li class="step">
+          <h3>We put the site on it and connect your domain</h3>
+          <p>This is the fiddly part and it is entirely ours. When it is finished, typing your
+            domain into a phone brings up your site.</p>
+        </li>
+        <li class="step">
+          <h3>You set your own password</h3>
+          <p>You change it, in front of us, to something we have never seen. Write it down
+            somewhere real. From that moment the account is yours alone.</p>
+        </li>
+      </ol>
+    </section>
+
+    <section id="form">
+      <h2>Your enquiry form</h2>
+      <p class="lede">The thing that emails you when somebody fills in the contact form on
+        your site. Same pattern: we set it up, you confirm and take the password.</p>
+
+      <ol class="steps">
+        <li class="step">
+          <h3>We create it on your email and point it at your inbox</h3>
+          <p>You tell us which address enquiries should land in. It can be different from the
+            one the accounts are built on.</p>
+        </li>
+        <li class="step">
+          <h3>You click the confirmation email</h3>
+          <p>The third and last one.</p>
+        </li>
+        <li class="step">
+          <h3>We send a test enquiry and you watch it arrive</h3>
+          <p>We fill in your own form while you have your inbox open, so you see the thing
+            work rather than take our word for it.</p>
+          <figure class="fig">
+            <div class="fig__frame">
+              <div class="fig__bar"><span class="fig__dot"></span><span class="fig__dot"></span><span class="fig__dot"></span><span class="fig__addr">your inbox</span></div>
+              <div class="fig__body">
+                <span class="fig__label">New enquiry from your website</span>
+                <div class="fig__field" data-fill>Name, phone, and what they wrote</div>
+                <span class="fig__mark">If this does not arrive, we do not finish the call</span>
+              </div>
+            </div>
+            <figcaption>Check the spam folder too, and mark it "not spam" if it lands there.
+              That teaches your mail provider to trust the next one.</figcaption>
+          </figure>
+        </li>
+        <li class="step">
+          <h3>You set your own password</h3>
+          <p>Third and last.</p>
+        </li>
+      </ol>
+    </section>
+
+    <section id="edit">
+      <h2>Changing your site</h2>
+      <p class="lede">Opening hours, your phone number, prices, a note that you are shut for
+        a week. You change these yourself, on your phone, in about a minute.</p>
+
+      <ol class="steps">
+        <li class="step">
+          <h3>Go to your own website and add <em>/edit</em> to the address</h3>
+          <p>So if your site is <em>yourbusiness.com.au</em>, you go to
+            <em>yourbusiness.com.au/edit</em>. Bookmark it.</p>
+        </li>
+        <li class="step">
+          <h3>Type your email and the code we send you</h3>
+          <p>There is no password to remember. You get a six-digit code by email, the same way
+            your bank does it, and it lets you in for the afternoon.</p>
+        </li>
+        <li class="step">
+          <h3>Tap the thing you want to change, on the page itself</h3>
+          <p>You are looking at your actual site, not a form full of boxes. Tap your phone
+            number and type the new one. Tap your hours and change Saturday.</p>
+          <figure class="fig">
+            <div class="fig__frame">
+              <div class="fig__bar"><span class="fig__dot"></span><span class="fig__dot"></span><span class="fig__dot"></span><span class="fig__addr">yourbusiness.com.au/edit</span></div>
+              <div class="fig__body">
+                <span class="fig__label">Your site, with the changeable bits outlined</span>
+                <div class="fig__field" data-fill>(08) 5550 1234 <span class="fig__mark">tap to change</span></div>
+                <div class="fig__field" data-fill>Mon&ndash;Fri 7am&ndash;5pm <span class="fig__mark">tap to change</span></div>
+                <span class="fig__btn">Save changes</span>
+              </div>
+            </div>
+            <figcaption>Only the outlined parts can be changed. You cannot break the layout or
+              delete anything structural, because those are not editable at all.</figcaption>
+          </figure>
+        </li>
+        <li class="step">
+          <h3>Press save, and wait about a minute</h3>
+          <p>It says when it is done. Your live site updates itself. If you change your mind,
+            "put it back how it was" restores the previous version.</p>
+        </li>
+      </ol>
+
+      <div class="note">
+        <p><span class="note__h">What you cannot change here</span>
+          Anything structural — the layout, new sections, a whole new page. That is a job
+          rather than an edit, so ask us and we will price it. The editor is deliberately
+          limited so it is impossible to break your site with it.</p>
+      </div>
+
+      <div class="note">
+        <p><span class="note__h">And if the editor itself ever stops working</span>
+          Your website is unaffected. It is a separate thing that writes changes to your site;
+          the site does not need it in order to keep running. A broken editor is an
+          inconvenience, never an outage.</p>
+      </div>
+    </section>
+
+    <section id="working">
+      <h2>Keeping it working</h2>
+      <p class="lede">Three things need occasional attention. All three are yours, and none
+        of them takes longer than a minute.</p>
+
+      <h3>1. The domain renews once a year</h3>
+      <p>Auto-renew handles it as long as the card on file is current. If you get a new card,
+        update it. This is the only one that can actually take your site off the internet.</p>
+
+      <h3>2. Test the enquiry form every few months</h3>
+      <p>Fill in your own contact form and check it arrives. Silence from a contact form looks
+        exactly the same whether it is broken or nobody is enquiring, which is why it is worth
+        checking rather than assuming.</p>
+
+      <h3>3. Keep your Google listing right</h3>
+      <p>Your Google Business Profile is worth more than the website for being found, and it
+        is free. Keep the hours accurate, especially at Christmas, and ask happy customers for
+        reviews. If you change your phone number, change it there too.</p>
+    </section>
+
+    <section id="wrong">
+      <h2>If something looks wrong</h2>
+      <p class="lede">In rough order of how often it actually happens.</p>
+
+      <div class="trouble">
+        <details>
+          <summary>The site will not load at all</summary>
+          <p>Nine times out of ten the domain has lapsed. Log in to your registrar and look at
+            whether it is expired — if it is, renewing usually brings the site straight back.</p>
+          <p>If the domain is fine, check whether it is only you: try it on mobile data with
+            the wi-fi off. If it works there, the problem is your own connection, not the site.</p>
+        </details>
+        <details>
+          <summary>Enquiries have stopped arriving</summary>
+          <p>Send yourself one through the form. If it arrives, they were probably going to
+            spam — find an old one, mark it "not spam", and add the sender to your contacts.</p>
+          <p>If it does not arrive, log in to the form account and check it has not hit a
+            monthly limit or had the email address changed.</p>
+        </details>
+        <details>
+          <summary>I changed something and it looks wrong</summary>
+          <p>In the editor, "put it back how it was" restores the version before your last
+            save. Nothing you can do in the editor is permanent.</p>
+        </details>
+        <details>
+          <summary>My phone number changed</summary>
+          <p>Change it in the editor, which updates it everywhere on the site at once. Then
+            change it on your Google Business Profile, which is separate and not something the
+            website can update for you.</p>
+        </details>
+        <details>
+          <summary>I have lost the password to one of the accounts</summary>
+          <p>Every one of them has "forgot password", and they all send the reset to the email
+            address the account was built on. That is why that address matters more than the
+            passwords do.</p>
+        </details>
+      </div>
+    </section>
+
+    <section id="leaving">
+      <h2>Taking it somewhere else</h2>
+      <p class="lede">Written down because a promise that you are not locked in is worth
+        nothing unless the exit is documented.</p>
+
+      <p>You do not need our permission or our help, and nothing has to be unpicked from our
+        end, because nothing of yours runs through us.</p>
+
+      <ul class="plain">
+        <li><strong>To another designer.</strong> Give them the logins to the three accounts
+          and the folder of files. That is genuinely all there is.</li>
+        <li><strong>To a different host.</strong> Your domain is not tied to your hosting. Point
+          it wherever you like, whenever you like.</li>
+        <li><strong>Away from the website entirely.</strong> Cancel the hosting and the form.
+          Keep the domain if you ever want it again — it is cheap, and it stops anyone else
+          using your name.</li>
+      </ul>
+
+      <p>If you want us to help hand it over, we will, and we will not charge you for that.</p>
+    </section>
+
+  </main>
+</div>
+
+<footer class="foot">
+  <span>Keystock, Perth WA</span>
+  <a href="../">Back to the site</a>
+</footer>
+
+<script>
+  /* Mark the section you are reading in the contents. Reading position, not
+     click position: somebody who scrolls past three sections should see that
+     reflected without having clicked anything. */
+  (function () {
+    var links = [].slice.call(document.querySelectorAll('.toc a[href^="#"]'));
+    if (!links.length || !('IntersectionObserver' in window)) return;
+    var sections = links.map(function (a) { return document.getElementById(a.getAttribute('href').slice(1)); });
+
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        var i = sections.indexOf(en.target);
+        if (i < 0) return;
+        if (en.isIntersecting) links[i].setAttribute('aria-current', 'true');
+        else links[i].removeAttribute('aria-current');
+      });
+    }, { rootMargin: '-10% 0px -70% 0px' });
+    sections.forEach(function (el) { if (el) io.observe(el); });
+
+    /* On a phone the contents are a collapsed panel; choosing something should
+       put it away again rather than leave it covering what you chose. */
+    var toc = document.getElementById('toc');
+    function narrow() { return matchMedia('(max-width: 899px)').matches; }
+    if (toc) {
+      links.forEach(function (a) {
+        a.addEventListener('click', function () { if (narrow()) toc.open = false; });
+      });
+    }
+  })();
+</script>
+</body>
+</html>
