@@ -16,6 +16,11 @@
   @font-face { font-family:"Libre Franklin"; src:url("../assets/libre-franklin-latin.woff2") format("woff2");
                font-weight:400 600; font-style:normal; font-display:swap; }
   :root{
+    /* The dropdown list itself is drawn by the operating system, not from the
+       rules below. Undeclared, it gets built for a light page and the options
+       came out near-invisible against the dark control. This is the only thing
+       that reaches them; the option rule after it is the Windows belt-and-brace. */
+    color-scheme: dark;
     --canvas:#08090b; --surface:#101217; --ink:#f4f2ef; --soft:#9a9ba1;
     --accent:#d8ff3e; --accent-ink:#08090b; --line:rgba(217,214,208,0.14);
     --line-firm:rgba(217,214,208,0.28); --bad:#E8877E;
@@ -48,6 +53,8 @@
   input[type=text],input[type=tel],input[type=email],input[type=url],textarea,select{
     width:100%;background:rgba(0,0,0,.25);color:var(--ink);border:1px solid var(--line);
     border-radius:2px;padding:.7rem .8rem;font:inherit;font-size:1rem}
+  select option{background:var(--surface);color:var(--ink)}
+  select option:disabled{color:var(--soft)}
   textarea{min-height:5.5rem;resize:vertical}
   input:hover,textarea:hover,select:hover{border-color:var(--soft)}
   input:focus,textarea:focus,select:focus{border-color:var(--accent);outline:none}
@@ -56,6 +63,38 @@
   .err[hidden]{display:none}
   .row{display:grid;gap:.8rem}
   @media(min-width:32rem){ .row-3{grid-template-columns:2fr 1fr 1fr} .row-2{grid-template-columns:1fr 1fr} }
+
+  /* ---- photo uploads ---------------------------------------------------
+     The file input itself is never shown: its native rendering is "Choose
+     File / no file selected" in the OS font, which on a dark page looks
+     broken. The label is the button, which is what for= is for -- it keeps
+     the keyboard and screen-reader behaviour the input already had. */
+  .up{border:1px solid var(--line);border-radius:2px;padding:.85rem .9rem;margin-bottom:.8rem}
+  .up__head{display:grid;margin-bottom:.6rem}
+  .up__head b{font-weight:600;font-size:.95rem}
+  .up__head span{color:var(--soft);font-size:.84rem}
+  .up__input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+  .up__btn{display:inline-block;cursor:pointer;font-size:.88rem;font-weight:600;
+           padding:.5rem 1rem;border:1px solid var(--line-firm);border-radius:2px;
+           background:rgba(255,255,255,.04);color:var(--ink)}
+  .up__btn:hover{border-color:var(--accent);color:var(--accent)}
+  .up__input:focus-visible + .up__btn,
+  .up__btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .up__list{list-style:none;margin:.7rem 0 0;padding:0;display:grid;gap:.5rem}
+  .up__list:empty{display:none}
+  .up__item{display:grid;grid-template-columns:auto 1fr auto;gap:.7rem;align-items:center;
+            background:rgba(255,255,255,.03);border:1px solid var(--line);padding:.45rem}
+  .up__thumb{width:48px;height:48px;object-fit:cover;background:#000;border-radius:2px}
+  .up__meta{min-width:0}
+  .up__name{display:block;font-size:.85rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .up__state{display:block;font-size:.78rem;color:var(--soft)}
+  .up__item[data-state="done"] .up__state{color:var(--accent)}
+  .up__item[data-state="error"] .up__state{color:var(--bad)}
+  .up__drop{background:none;border:0;color:var(--soft);font:inherit;font-size:1.3rem;
+            line-height:1;padding:.2rem .5rem;cursor:pointer}
+  .up__drop:hover{color:var(--bad)}
+  .up__off{color:var(--soft);font-size:.86rem;border-left:2px solid var(--line-firm);
+           padding-left:.8rem;margin:.2rem 0 1rem}
 
   .checks{display:grid;gap:.5rem;margin:.2rem 0 1rem}
   @media(min-width:30rem){ .checks{grid-template-columns:1fr 1fr} }
@@ -186,18 +225,25 @@
 
   <fieldset data-mode="build">
     <legend>Opening hours</legend>
-    <p class="hint">These came from Google. If they are out of date, fix them here.
-       Wrong hours cost you more work than a bad website does.</p>
-    <div class="f">
+    <!-- Two states, decided by whether any hours actually arrived. Telling
+         somebody to check hours that are not on the page is the kind of small
+         wrongness that makes a form feel like it was not written for them. -->
+    <p class="hint" id="hours-hint-google" hidden>These came from your Google listing.
+       If they are out of date, fix them here. Wrong hours cost you more work than
+       a bad website does.</p>
+    <p class="hint" id="hours-hint-blank">One line per day. Wrong hours cost you
+       more work than a bad website does.</p>
+    <div class="f" id="hours-check" hidden>
       <label for="hours_correct">Are these right?</label>
       <select id="hours_correct" name="hours_correct">
         <option value="yes">Yes, they are correct</option>
-        <option value="no">No, the correct ones are below</option>
+        <option value="no">No, I have corrected them below</option>
       </select>
     </div>
     <div class="f">
       <label for="hours_detail">Opening hours</label>
-      <textarea id="hours_detail" name="hours_detail"></textarea>
+      <textarea id="hours_detail" name="hours_detail" rows="7"
+        placeholder="Monday: 8:00 am - 5:00 pm&#10;Tuesday: 8:00 am - 5:00 pm&#10;...&#10;Saturday: Closed&#10;Sunday: Closed"></textarea>
     </div>
   </fieldset>
 
@@ -260,22 +306,72 @@
     <div class="f"><label for="extras">Anything else you offer customers</label><input id="extras" name="extras" type="text"></div>
   </details>
 
-  <details class="more" data-mode="build">
-    <summary>Photographs <span>Yours beat stock photographs every time. Send them after if easier.</span></summary>
-    <p class="hint">You do not need to upload anything now. Say what you have and
-       we will ask for them, or reply to the text with photos straight from your phone.</p>
-    <div class="checks">
-      <label class="check"><input type="checkbox" name="photos" value="frontage"> The front of the shop</label>
-      <label class="check"><input type="checkbox" name="photos" value="workshop"> Inside the workshop</label>
-      <label class="check"><input type="checkbox" name="photos" value="team"> You or the team</label>
-      <label class="check"><input type="checkbox" name="photos" value="logo"> A logo</label>
+  <details class="more" data-mode="build" id="photos-block">
+    <summary>Photographs <span>Yours beat stock photographs every time. Add them here, or send them later.</span></summary>
+    <p class="hint">Straight off your phone is fine. They are shrunk in your browser
+       before they are sent, so this works on mobile data.</p>
+
+    <div class="up" data-slot="photo_frontage">
+      <div class="up__head"><b>The front of the shop</b><span>Becomes the main picture</span></div>
+      <label class="up__btn" for="up-photo_frontage">Choose a photo</label>
+      <input class="up__input" id="up-photo_frontage" type="file" accept="image/jpeg,image/png,image/webp">
+      <ul class="up__list"></ul>
     </div>
+
+    <div class="up" data-slot="photo_workshop">
+      <div class="up__head"><b>Inside the workshop</b><span>Where the work happens</span></div>
+      <label class="up__btn" for="up-photo_workshop">Choose a photo</label>
+      <input class="up__input" id="up-photo_workshop" type="file" accept="image/jpeg,image/png,image/webp">
+      <ul class="up__list"></ul>
+    </div>
+
+    <div class="up" data-slot="photo_team">
+      <div class="up__head"><b>You or the team</b><span>A face does more than any wording</span></div>
+      <label class="up__btn" for="up-photo_team">Choose a photo</label>
+      <input class="up__input" id="up-photo_team" type="file" accept="image/jpeg,image/png,image/webp">
+      <ul class="up__list"></ul>
+    </div>
+
+    <div class="up" data-slot="logo">
+      <div class="up__head"><b>Your logo</b><span>If you have one. A PNG with a clear background is ideal</span></div>
+      <label class="up__btn" for="up-logo">Choose a file</label>
+      <input class="up__input" id="up-logo" type="file" accept="image/jpeg,image/png,image/webp">
+      <ul class="up__list"></ul>
+    </div>
+
+    <div class="up" data-slot="photos" data-max="8">
+      <div class="up__head"><b>Anything else</b><span>Up to eight. Signage, the yard, a job you are proud of</span></div>
+      <label class="up__btn" for="up-photos">Choose photos</label>
+      <input class="up__input" id="up-photos" type="file" accept="image/jpeg,image/png,image/webp" multiple>
+      <ul class="up__list"></ul>
+    </div>
+
+    <p class="up__off" id="up-off" hidden></p>
+
     <div class="f"><label for="photos_avoid">Anything you would rather we did not show</label><input id="photos_avoid" name="photos_avoid" type="text"></div>
     <div class="f" data-trade="mechanics">
       <label for="does_panel_work">Do you do panel or smash repairs?</label>
       <select id="does_panel_work" name="does_panel_work">
         <option value="">No</option><option value="yes">Yes, before and after shots work well</option>
       </select>
+    </div>
+
+    <!-- Only worth asking once they have said they do the work. Before and after
+         live in separate fields so the two can never be swapped round. -->
+    <div id="ba-block" hidden>
+      <div class="up" data-slot="before_photos" data-max="4">
+        <div class="up__head"><b>Before shots</b><span>The damage, as it came in</span></div>
+        <label class="up__btn" for="up-before_photos">Choose photos</label>
+        <input class="up__input" id="up-before_photos" type="file" accept="image/jpeg,image/png,image/webp" multiple>
+        <ul class="up__list"></ul>
+      </div>
+      <div class="up" data-slot="after_photos" data-max="4">
+        <div class="up__head"><b>After shots</b><span>The same car finished</span></div>
+        <label class="up__btn" for="up-after_photos">Choose photos</label>
+        <input class="up__input" id="up-after_photos" type="file" accept="image/jpeg,image/png,image/webp" multiple>
+        <ul class="up__list"></ul>
+      </div>
+      <div class="f"><label for="before_after_captions">What was done, one line per pair <span class="opt">optional</span></label><textarea id="before_after_captions" name="before_after_captions"></textarea></div>
     </div>
   </details>
 
@@ -425,6 +521,13 @@
     }
   }
 
+  /* Only claim the hours came from Google when some actually did. A listing
+     with no hours on it is common, so this is not only the cold-visitor case. */
+  var gotHours = !!(pre.hours_detail || '').trim();
+  document.getElementById('hours-hint-google').hidden = !gotHours;
+  document.getElementById('hours-hint-blank').hidden = gotHours;
+  document.getElementById('hours-check').hidden = !gotHours;
+
   if (pre.business_type) {
     typeSel.value = pre.business_type;
     typeStep.hidden = true;            // we sent them here; asking would be odd
@@ -438,6 +541,172 @@
   /* Settle the page before first paint of the form: a cold visitor sees only the
      trade question, and somebody arriving from /f/<code> never sees it at all. */
   setMode(!typeSel.value ? 'choose' : READY[typeSel.value] ? 'build' : 'interest');
+
+  /* ---- photographs -----------------------------------------------------
+     Each file goes up on its own, as it is chosen, and the submission carries
+     only URLs. A phone photo is eight to twelve megabytes; four of them inside
+     the JSON submission would be a 50MB request over mobile data that loses the
+     whole brief if it fails near the end.
+
+     The shrinking happens here rather than on the server because the browser
+     already has a decoder and a canvas, and because what matters is the size of
+     what crosses the network, not the size of what gets stored. A 4032x3024
+     phone photo comes out around 300KB at 2000px wide, which is larger than the
+     site will ever display. */
+  var MAX_EDGE = 2000;
+  var QUALITY = 0.82;
+  var session = '';                  // issued by the server on the first upload
+  var uploadsOff = false;            // set once the endpoint says it is absent
+
+  function shrink(file) {
+    /* A PNG small enough to leave alone is left alone: re-encoding a logo as
+       JPEG would fill its transparent background with black. */
+    if (file.type === 'image/png' && file.size <= 2 * 1024 * 1024) return Promise.resolve(file);
+    return new Promise(function (resolve) {
+      var url = URL.createObjectURL(file);
+      var img = new Image();
+      img.onload = function () {
+        var w = img.naturalWidth, h = img.naturalHeight;
+        var scale = Math.min(1, MAX_EDGE / Math.max(w, h));
+        if (scale === 1 && file.size <= 1024 * 1024) { URL.revokeObjectURL(url); return resolve(file); }
+        var c = document.createElement('canvas');
+        c.width = Math.round(w * scale); c.height = Math.round(h * scale);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        c.toBlob(function (blob) {
+          URL.revokeObjectURL(url);
+          // If the re-encode came out larger, keep the original.
+          if (!blob || blob.size >= file.size) return resolve(file);
+          resolve(blob);
+        }, 'image/jpeg', QUALITY);
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); resolve(file); };
+      img.src = url;
+    });
+  }
+
+  function hiddenFor(slot, url) {
+    var el = document.createElement('input');
+    el.type = 'hidden';
+    el.name = slot;
+    el.value = url;
+    el.setAttribute('data-multi', '1');
+    return el;
+  }
+
+  function wireUploader(box) {
+    var slot = box.getAttribute('data-slot');
+    var max = parseInt(box.getAttribute('data-max') || '1', 10);
+    var input = box.querySelector('.up__input');
+    var list = box.querySelector('.up__list');
+    var btn = box.querySelector('.up__btn');
+
+    function count() { return list.children.length; }
+    function refresh() {
+      var full = count() >= max;
+      btn.hidden = full || uploadsOff;
+      if (max === 1 && count()) btn.textContent = 'Replace';
+    }
+
+    function add(file) {
+      var item = document.createElement('li');
+      item.className = 'up__item';
+      item.setAttribute('data-state', 'working');
+
+      var thumb = document.createElement('img');
+      thumb.className = 'up__thumb';
+      thumb.alt = '';
+      var preview = URL.createObjectURL(file);
+      thumb.src = preview;
+
+      var meta = document.createElement('div');
+      meta.className = 'up__meta';
+      var name = document.createElement('span');
+      name.className = 'up__name';
+      name.textContent = file.name || 'photo';
+      var state = document.createElement('span');
+      state.className = 'up__state';
+      state.textContent = 'Preparing…';
+      meta.appendChild(name); meta.appendChild(state);
+
+      var drop = document.createElement('button');
+      drop.type = 'button';
+      drop.className = 'up__drop';
+      drop.innerHTML = '&times;';
+      drop.setAttribute('aria-label', 'Remove ' + (file.name || 'this photo'));
+      drop.addEventListener('click', function () {
+        URL.revokeObjectURL(preview);
+        if (item.hidden0) item.hidden0.remove();
+        item.remove();
+        refresh();
+      });
+
+      item.appendChild(thumb); item.appendChild(meta); item.appendChild(drop);
+      list.appendChild(item);
+      refresh();
+
+      shrink(file).then(function (small) {
+        state.textContent = 'Sending…';
+        var body = new FormData();
+        body.append('file', small, file.name || 'photo.jpg');
+        body.append('slot', slot);
+        if (session) body.append('session', session);
+        if (pre.code) body.append('code', pre.code);
+        return fetch('/api/upload', { method: 'POST', body: body }).then(function (r) {
+          return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, status: r.status, j: j }; });
+        });
+      }).then(function (res) {
+        if (res.ok && res.j.url) {
+          session = res.j.session || session;
+          var h = hiddenFor(slot, res.j.url);
+          item.hidden0 = h;
+          box.appendChild(h);
+          item.setAttribute('data-state', 'done');
+          state.textContent = 'Sent';
+          return;
+        }
+        item.setAttribute('data-state', 'error');
+        if (res.status === 404 || res.status === 503) {
+          /* Say it once, at the top, and stop offering the buttons -- four
+             identical failures in a row reads as though the page is broken. */
+          uploadsOff = true;
+          var off = document.getElementById('up-off');
+          off.hidden = false;
+          off.textContent = res.status === 404
+            ? 'Photo uploads are not connected on this address yet, so nothing was sent. Everything else on this form works — reply to the text with your photos and we will add them.'
+            : (res.j.message || 'Photographs are not connected yet.') + ' Reply to the text with them and we will add them.';
+          [].forEach.call(document.querySelectorAll('.up__btn'), function (b) { b.hidden = true; });
+          state.textContent = 'Not sent';
+          return;
+        }
+        state.textContent = res.j.message || 'That one did not send. Remove it and try again.';
+      }).catch(function () {
+        item.setAttribute('data-state', 'error');
+        state.textContent = 'The connection dropped. Remove it and try again.';
+      });
+    }
+
+    input.addEventListener('change', function () {
+      var files = [].slice.call(input.files || []);
+      // A single slot replaces rather than stacks: choosing again means the
+      // first one was wrong.
+      if (max === 1 && files.length) {
+        [].forEach.call(list.querySelectorAll('.up__drop'), function (b) { b.click(); });
+      }
+      files.slice(0, Math.max(0, max - count())).forEach(add);
+      input.value = '';              // so the same file can be chosen again
+    });
+
+    refresh();
+  }
+
+  [].forEach.call(document.querySelectorAll('.up'), wireUploader);
+
+  /* Before-and-after only makes sense once they have said they do the work. */
+  var panel = form.elements.does_panel_work;
+  var ba = document.getElementById('ba-block');
+  function syncBa() { ba.hidden = !(panel && panel.value === 'yes'); }
+  if (panel) panel.addEventListener('change', syncBa);
+  syncBa();
 
   /* Validation lives where the field is, and only complains once you have had a
      go at it. Telling someone a box is empty before they reach it is noise. */
@@ -504,6 +773,9 @@
       if (el.type === 'checkbox') {
         if (!el.checked) return;
         (data[el.name] = data[el.name] || []).push(el.value);
+      } else if (el.getAttribute('data-multi') === '1') {
+        // Several photos share one field name, the way a checkbox group does.
+        if ((el.value || '').trim()) (data[el.name] = data[el.name] || []).push(el.value.trim());
       } else if ((el.value || '').trim()) {
         data[el.name] = el.value.trim();
       }
