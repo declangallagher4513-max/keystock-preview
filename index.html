@@ -712,8 +712,8 @@
              camera closes on its screen until the black glass fills the frame.
              It is 16:9, so it only stands in on a landscape viewport; narrow
              screens keep the CSS device below until the other ratios exist. -->
-        <video class="castfilm" id="castfilm" src="assets/cast-laptop.mp4"
-               muted playsinline preload="auto" disablepictureinpicture
+        <video class="castfilm" id="castfilm" data-src="assets/cast-laptop.mp4"
+               muted playsinline preload="none" disablepictureinpicture
                aria-hidden="true"></video>
         <!-- The same two lines as .castscreen. They are duplicated rather than
              shared because the CSS device grows its screen and the type has to
@@ -1159,7 +1159,15 @@
        shape belongs -- a landscape viewport -- and reduced motion keeps the
        quiet CSS version. The other two ratios are not filmed yet. */
     var useFilm = !!film && w >= 860 && innerWidth >= innerHeight && !reduce;
-    if (useFilm) document.body.classList.add('cast-film');
+    if (useFilm) {
+      document.body.classList.add('cast-film');
+      /* Fetch it now that we know it is wanted. A phone, a portrait window or
+         reduced motion never reaches this line and never pays for the file. */
+      if (!film.src && film.dataset.src) {
+        film.preload = 'auto';
+        film.src = film.dataset.src;
+      }
+    }
 
     /* The film finishes here and the last fifth of the act belongs to the
        wordmark arriving on the screen the film has just filled the frame with.
