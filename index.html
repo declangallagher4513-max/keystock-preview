@@ -555,6 +555,14 @@
                  color: var(--sc-ink); background: rgba(255,255,255,0.04);
                  border-left: 2px solid var(--sc-accent); max-width: 46ch; }
   .form__said[hidden] { display: none; }
+  /* The hand-on. Once the three boxes are in, the full form is the next thing
+     they have to do, so it looks like the button they just pressed rather than
+     a line of text they might read past. */
+  .form__go { justify-self: start; display: inline-block; background: var(--sc-accent);
+              color: var(--sc-accent-ink); padding: 0.85rem 1.6rem; font-weight: 600;
+              text-decoration: none; }
+  .form__go:focus-visible { outline: 2px solid var(--sc-ink); outline-offset: 3px; }
+  .form__go[hidden] { display: none; }
 
   /* ---- preview retrieval -------------------------------------------------
      A slim strip rather than a band: it is the first thing one kind of visitor
@@ -855,7 +863,7 @@
   <section class="band" id="ask">
     <div class="band__head">
       <h2>Tell us what your shop is called.</h2>
-      <p class="lede">That is genuinely all we need to start. We will find the rest and build the page.</p>
+      <p class="lede">Three boxes to start. Then we send you the form the page gets built from — hours, services, photos, the things only you know.</p>
     </div>
     <form class="form" id="askform" novalidate>
       <p class="form__proto">This is a preview of a site we are still building.
@@ -879,10 +887,11 @@
       <p class="hp" aria-hidden="true"><label>Leave this empty<input name="company_url" tabindex="-1" autocomplete="off"></label></p>
       <button type="submit">Get a preview</button>
       <p class="form__said" id="said" hidden role="status"></p>
+      <a class="form__go" id="saidgo" href="#" hidden>Open the form</a>
       <p class="form__note">Free to look, and there is nothing to cancel if you decide against it.</p>
       <ol class="next">
-        <li>We build your page from what is already public about your business.</li>
-        <li>We send you a link to the finished thing, with the price.</li>
+        <li>You fill in the longer form. It takes about ten minutes and you can stop and come back.</li>
+        <li>We build the page from your answers and send you the link, with the price.</li>
         <li>You decide. Nothing happens until you do.</li>
       </ol>
     </form>
@@ -1427,7 +1436,17 @@
         return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, status: r.status, j: j }; });
       }).then(function (res) {
         if (res.ok) {
-          said.textContent = res.j.message || 'Got it. We will build your page and send you the link.';
+          said.textContent = res.j.message || 'Got it. We will be in touch.';
+          /* The endpoint mints a form code and hands back its URL. Show it as a
+             link rather than redirecting: a redirect fired from a fetch reply
+             steals the page out from under someone still reading the line above
+             it, and if the mint failed there is simply no link and the message
+             says the enquiry is saved. */
+          var go = document.getElementById('saidgo');
+          if (go) {
+            go.hidden = !res.j.formUrl;
+            if (res.j.formUrl) { go.href = res.j.formUrl; go.focus(); }
+          }
           form.reset();
           fields.forEach(function (el) { el.removeAttribute('aria-invalid'); delete el.dataset.touched;
             var e2 = document.getElementById(el.id + '-err'); if (e2) { e2.hidden = true; e2.textContent = ''; } });

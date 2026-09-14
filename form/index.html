@@ -1,0 +1,543 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Your details · Keystock</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230A0C11'/><rect x='9' y='11' width='14' height='9' rx='1' fill='%23F7F4EC'/></svg>">
+
+<!-- Replaced server-side by functions/f/[code].js with this business's details,
+     fetched live from Places for that one render and never stored. Left empty
+     here so the page also works standalone, which is how it gets tested. -->
+<script id="prefill" type="application/json">{}</script>
+
+<style>
+  @font-face { font-family:"Libre Franklin"; src:url("../assets/libre-franklin-latin.woff2") format("woff2");
+               font-weight:400 600; font-style:normal; font-display:swap; }
+  :root{
+    --canvas:#08090b; --surface:#101217; --ink:#f4f2ef; --soft:#9a9ba1;
+    --accent:#d8ff3e; --accent-ink:#08090b; --line:rgba(217,214,208,0.14);
+    --line-firm:rgba(217,214,208,0.28); --bad:#E8877E;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--canvas);color:var(--ink);
+       font-family:"Libre Franklin","Segoe UI",system-ui,sans-serif;
+       font-size:1.0625rem;line-height:1.55;-webkit-text-size-adjust:100%}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+  .wrap{max-width:40rem;margin:0 auto;padding:clamp(1.25rem,5vw,2.5rem) clamp(1.1rem,5vw,2rem) 5rem}
+  header{margin-bottom:1.8rem}
+  h1{font-size:clamp(1.4rem,5vw,1.9rem);line-height:1.2;margin:0 0 .5rem;font-weight:600}
+  .lede{color:var(--soft);margin:0}
+
+  fieldset{border:0;padding:0;margin:0 0 2.2rem}
+  legend{padding:0;font-size:.78rem;letter-spacing:.16em;text-transform:uppercase;
+         color:var(--accent);margin-bottom:.9rem}
+  .hint{color:var(--soft);font-size:.9rem;margin:-.4rem 0 1rem}
+
+  /* The UA gives [hidden] display:none, but any author rule with a display beats
+     it -- .f below is display:grid, so el.hidden=true on a field did nothing and
+     the interest-only boxes stayed on screen through a mechanic build. .err and
+     .said had each been patched for this one at a time; this is the general
+     case, and setMode() depends on it. */
+  [hidden]{display:none!important}
+  .f{display:grid;gap:.35rem;margin-bottom:1rem}
+  .f > label{font-size:.88rem;color:var(--soft)}
+  .f .opt{color:var(--soft);opacity:.7}
+  input[type=text],input[type=tel],input[type=email],input[type=url],textarea,select{
+    width:100%;background:rgba(0,0,0,.25);color:var(--ink);border:1px solid var(--line);
+    border-radius:2px;padding:.7rem .8rem;font:inherit;font-size:1rem}
+  textarea{min-height:5.5rem;resize:vertical}
+  input:hover,textarea:hover,select:hover{border-color:var(--soft)}
+  input:focus,textarea:focus,select:focus{border-color:var(--accent);outline:none}
+  input[aria-invalid=true]{border-color:var(--bad)}
+  .err{color:var(--bad);font-size:.82rem;min-height:1em}
+  .err[hidden]{display:none}
+  .row{display:grid;gap:.8rem}
+  @media(min-width:32rem){ .row-3{grid-template-columns:2fr 1fr 1fr} .row-2{grid-template-columns:1fr 1fr} }
+
+  .checks{display:grid;gap:.5rem;margin:.2rem 0 1rem}
+  @media(min-width:30rem){ .checks{grid-template-columns:1fr 1fr} }
+  .check{display:flex;gap:.55rem;align-items:flex-start;font-size:.95rem;
+         padding:.55rem .7rem;border:1px solid var(--line);border-radius:2px;cursor:pointer}
+  .check:hover{border-color:var(--soft)}
+  .check input{margin:.25rem 0 0;accent-color:var(--accent);flex:none}
+
+  details.more{border-top:1px solid var(--line);margin-bottom:1.6rem}
+  details.more > summary{list-style:none;cursor:pointer;padding:1rem 2rem 1rem 0;position:relative;
+                         font-weight:600;font-size:1rem}
+  details.more > summary::-webkit-details-marker{display:none}
+  details.more > summary::after{content:"";position:absolute;right:.3rem;top:50%;margin-top:-6px;
+    width:9px;height:9px;border-right:1.5px solid var(--accent);border-bottom:1.5px solid var(--accent);
+    transform:rotate(45deg);transition:transform 220ms cubic-bezier(.23,1,.32,1)}
+  details.more[open] > summary::after{transform:rotate(-135deg);margin-top:-2px}
+  details.more > summary span{display:block;font-weight:400;font-size:.88rem;color:var(--soft);margin-top:.15rem}
+  @media(prefers-reduced-motion:reduce){ details.more > summary::after{transition:none} }
+
+  .prefilled{background:rgba(216,255,62,.05);border-left:2px solid var(--accent);
+             padding:.8rem 1rem;font-size:.92rem;margin:0 0 1.6rem}
+  .prefilled b{display:block;margin-bottom:.2rem}
+
+  .send{position:sticky;bottom:0;background:linear-gradient(to top,var(--canvas) 70%,transparent);
+        padding:1rem 0 1.2rem;margin-top:1rem}
+  button[type=submit]{width:100%;background:var(--accent);color:var(--accent-ink);border:0;
+    border-radius:2px;padding:.95rem 1.2rem;font:inherit;font-weight:600;font-size:1.05rem;cursor:pointer}
+  button[type=submit]:disabled{opacity:.55;cursor:not-allowed}
+  .said{margin:.8rem 0 0;padding:.9rem 1rem;border:1px solid var(--accent);font-size:.95rem}
+  .said[hidden]{display:none}
+  .note{color:var(--soft);font-size:.86rem;margin:.7rem 0 0}
+  .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Your details</h1>
+  <p class="lede" id="lede">So we can build your page.</p>
+</header>
+
+<p class="prefilled" id="prefilled-note" hidden><b>Nothing here is locked.</b>
+   We pulled what we could from your Google listing so you are correcting rather
+   than typing. Only the first section is needed; everything after it makes the
+   page better and can be left blank.</p>
+
+<form id="intake" novalidate>
+  <p class="hp" aria-hidden="true"><label>Leave this empty<input name="company_url" tabindex="-1" autocomplete="off"></label></p>
+
+  <!-- Skipped entirely when we already know: /f/<code> injects business_type and
+       script hides this. Asking somebody what trade they are in, in a form we
+       sent them because of their trade, reads as though we were not paying
+       attention. -->
+  <fieldset id="typestep">
+    <legend>First, what sort of business?</legend>
+    <p class="hint">It decides which questions are worth asking you.</p>
+    <div class="f">
+      <label for="business_type">Your trade</label>
+      <select id="business_type" name="business_type">
+        <option value="">Choose one…</option>
+        <option value="mechanics">Mechanic or auto repair</option>
+        <option value="auto_electricians">Auto electrician</option>
+        <option value="panel_beaters">Panel beater or smash repair</option>
+        <option value="electricians">Electrician</option>
+        <option value="hairdressers">Hairdresser</option>
+        <option value="barbers">Barber</option>
+        <option value="beauty_salons">Beauty salon</option>
+        <option value="cafes">Cafe or coffee</option>
+        <option value="landscaping">Landscaping or gardening</option>
+        <option value="roof_restoration">Roofing or restoration</option>
+        <option value="other">Something else</option>
+      </select>
+      <p class="err" id="business_type-err" hidden></p>
+    </div>
+    <div class="f" data-mode="interest">
+      <label for="trade_other">What do you do?</label>
+      <input id="trade_other" name="trade_other" type="text" placeholder="in your own words">
+    </div>
+  </fieldset>
+
+  <!-- Shown for every trade except mechanics. It promises nothing, because we
+       cannot build one yet and saying otherwise would be a lie told to somebody
+       who took the trouble to ask. -->
+  <p class="prefilled" id="not-yet" hidden></p>
+
+  <fieldset id="basics" hidden>
+    <legend>The basics</legend>
+    <div class="f">
+      <label for="business_name">Business name</label>
+      <input id="business_name" name="business_name" type="text" autocomplete="organization" required>
+      <p class="err" id="business_name-err" hidden></p>
+    </div>
+    <div class="row row-3">
+      <div class="f" data-mode="build">
+        <label for="street_address">Street address</label>
+        <input id="street_address" name="street_address" type="text" autocomplete="address-line1">
+      </div>
+      <div class="f">
+        <label for="suburb">Suburb</label>
+        <input id="suburb" name="suburb" type="text" autocomplete="address-level2">
+        <p class="err" id="suburb-err" hidden></p>
+      </div>
+      <div class="f" data-mode="build">
+        <label for="postcode">Postcode</label>
+        <input id="postcode" name="postcode" type="text" inputmode="numeric" autocomplete="postal-code">
+      </div>
+    </div>
+    <div class="row row-2" data-mode="build">
+      <div class="f">
+        <label for="phone">Phone</label>
+        <input id="phone" name="phone" type="tel" autocomplete="tel">
+        <p class="err" id="phone-err" hidden></p>
+      </div>
+      <div class="f">
+        <label for="email">Email <span class="opt">for enquiries</span></label>
+        <input id="email" name="email" type="email" autocomplete="email">
+        <p class="err" id="email-err" hidden></p>
+      </div>
+    </div>
+    <div class="f" data-mode="interest">
+      <label for="contact">Phone or email</label>
+      <input id="contact" name="contact" type="text" autocomplete="tel">
+      <p class="err" id="contact-err" hidden></p>
+    </div>
+    <input type="hidden" id="state" name="state">
+  </fieldset>
+
+  <fieldset data-mode="build">
+    <legend>Opening hours</legend>
+    <p class="hint">These came from Google. If they are out of date, fix them here.
+       Wrong hours cost you more work than a bad website does.</p>
+    <div class="f">
+      <label for="hours_correct">Are these right?</label>
+      <select id="hours_correct" name="hours_correct">
+        <option value="yes">Yes, they are correct</option>
+        <option value="no">No, the correct ones are below</option>
+      </select>
+    </div>
+    <div class="f">
+      <label for="hours_detail">Opening hours</label>
+      <textarea id="hours_detail" name="hours_detail"></textarea>
+    </div>
+  </fieldset>
+
+  <fieldset data-mode="build">
+    <legend>What you work on</legend>
+    <div class="checks" data-trade="mechanics">
+      <label class="check"><input type="checkbox" name="services" value="Logbook servicing"> Logbook servicing</label>
+      <label class="check"><input type="checkbox" name="services" value="Brakes and suspension"> Brakes and suspension</label>
+      <label class="check"><input type="checkbox" name="services" value="Clutch and transmission"> Clutch and transmission</label>
+      <label class="check"><input type="checkbox" name="services" value="Engine diagnostics"> Engine diagnostics</label>
+      <label class="check"><input type="checkbox" name="services" value="Air conditioning"> Air conditioning</label>
+      <label class="check"><input type="checkbox" name="services" value="Tyres and wheel alignment"> Tyres and wheel alignment</label>
+      <label class="check"><input type="checkbox" name="services" value="Batteries and electrical"> Batteries and electrical</label>
+      <label class="check"><input type="checkbox" name="services" value="Pre-purchase inspections"> Pre-purchase inspections</label>
+    </div>
+    <div class="f">
+      <label for="services_other">Anything else you do <span class="opt">optional</span></label>
+      <input id="services_other" name="services_other" type="text">
+    </div>
+    <div class="row row-2">
+      <div class="f" data-trade="mechanics">
+        <label for="makes">Makes you specialise in <span class="opt">optional</span></label>
+        <input id="makes" name="makes" type="text" placeholder="or leave blank for all makes">
+      </div>
+      <div class="f" data-trade="mechanics">
+        <label for="services_excluded">Anything you do <em>not</em> do <span class="opt">optional</span></label>
+        <input id="services_excluded" name="services_excluded" type="text">
+      </div>
+    </div>
+  </fieldset>
+
+  <details class="more" data-mode="build">
+    <summary>Proof you are real <span>Licence, ABN, how long you have been going. Strongest thing on the page.</span></summary>
+    <div class="row row-3">
+      <div class="f" data-trade="mechanics"><label for="mrb_licence">MRB licence number</label><input id="mrb_licence" name="mrb_licence" type="text"></div>
+      <div class="f"><label for="abn">ABN</label><input id="abn" name="abn" type="text" inputmode="numeric"></div>
+      <div class="f"><label for="year_started">Year started</label><input id="year_started" name="year_started" type="text" inputmode="numeric"></div>
+    </div>
+    <div class="f"><label for="memberships">Memberships or accreditations</label><input id="memberships" name="memberships" type="text"></div>
+    <div class="f"><label for="specialty">What you would say you are best at</label><input id="specialty" name="specialty" type="text"></div>
+  </details>
+
+  <details class="more" data-mode="build">
+    <summary>Warranty and guarantees <span>Only if you offer them.</span></summary>
+    <div class="f">
+      <label for="warranty_offered">Do you offer a warranty?</label>
+      <select id="warranty_offered" name="warranty_offered">
+        <option value="">Not sure yet</option><option value="yes">Yes</option><option value="no">No</option>
+      </select>
+    </div>
+    <div class="f"><label for="warranty_terms">Warranty terms</label><input id="warranty_terms" name="warranty_terms" type="text"></div>
+    <div class="f"><label for="guarantee_text">Any guarantee you want on the page</label><textarea id="guarantee_text" name="guarantee_text"></textarea></div>
+    <div class="f" data-trade="mechanics">
+      <label for="logbook_stamp">Can you stamp a logbook without voiding the new car warranty?</label>
+      <select id="logbook_stamp" name="logbook_stamp">
+        <option value="">Not sure</option><option value="yes">Yes</option><option value="no">No</option>
+      </select>
+    </div>
+    <div class="f"><label for="payment_methods">Payment methods you take</label><input id="payment_methods" name="payment_methods" type="text"></div>
+    <div class="f"><label for="extras">Anything else you offer customers</label><input id="extras" name="extras" type="text"></div>
+  </details>
+
+  <details class="more" data-mode="build">
+    <summary>Photographs <span>Yours beat stock photographs every time. Send them after if easier.</span></summary>
+    <p class="hint">You do not need to upload anything now. Say what you have and
+       we will ask for them, or reply to the text with photos straight from your phone.</p>
+    <div class="checks">
+      <label class="check"><input type="checkbox" name="photos" value="frontage"> The front of the shop</label>
+      <label class="check"><input type="checkbox" name="photos" value="workshop"> Inside the workshop</label>
+      <label class="check"><input type="checkbox" name="photos" value="team"> You or the team</label>
+      <label class="check"><input type="checkbox" name="photos" value="logo"> A logo</label>
+    </div>
+    <div class="f"><label for="photos_avoid">Anything you would rather we did not show</label><input id="photos_avoid" name="photos_avoid" type="text"></div>
+    <div class="f" data-trade="mechanics">
+      <label for="does_panel_work">Do you do panel or smash repairs?</label>
+      <select id="does_panel_work" name="does_panel_work">
+        <option value="">No</option><option value="yes">Yes, before and after shots work well</option>
+      </select>
+    </div>
+  </details>
+
+  <details class="more" data-mode="build">
+    <summary>What customers say <span>Only with their permission. We will not invent any.</span></summary>
+    <div class="f"><label for="testimonial_1">Testimonial</label><textarea id="testimonial_1" name="testimonial_1"></textarea></div>
+    <div class="f"><label for="testimonial_1_author">Who said it</label><input id="testimonial_1_author" name="testimonial_1_author" type="text"></div>
+    <div class="f"><label for="testimonial_2">Another</label><textarea id="testimonial_2" name="testimonial_2"></textarea></div>
+    <div class="f"><label for="testimonial_2_author">Who said it</label><input id="testimonial_2_author" name="testimonial_2_author" type="text"></div>
+    <div class="f">
+      <label for="testimonial_consent">Do you have their permission to publish these?</label>
+      <select id="testimonial_consent" name="testimonial_consent">
+        <option value="">Not yet</option><option value="yes">Yes</option>
+      </select>
+    </div>
+  </details>
+
+  <details class="more" data-mode="build">
+    <summary>Questions you get asked a lot <span>These become the FAQ. Skip any.</span></summary>
+    <div class="f"><label for="faq_service_time">How long does a service take?</label><input id="faq_service_time" name="faq_service_time" type="text"></div>
+    <div class="f"><label for="faq_quote">Do you give quotes before starting?</label><input id="faq_quote" name="faq_quote" type="text"></div>
+    <div class="f"><label for="faq_parking">Where do people park or drop off?</label><input id="faq_parking" name="faq_parking" type="text"></div>
+    <div class="f"><label for="faq_booking">How do people book?</label><input id="faq_booking" name="faq_booking" type="text"></div>
+    <div class="f"><label for="faq_other">Anything else you are asked constantly</label><textarea id="faq_other" name="faq_other"></textarea></div>
+  </details>
+
+  <details class="more" data-mode="build">
+    <summary>Prices <span>Optional. A range beats silence, and silence beats a wrong number.</span></summary>
+    <div class="f">
+      <label for="show_prices">Show prices on the page?</label>
+      <select id="show_prices" name="show_prices">
+        <option value="">No</option><option value="yes">Yes, ranges</option>
+      </select>
+    </div>
+    <div class="f"><label for="price_ranges">Price ranges</label><textarea id="price_ranges" name="price_ranges"></textarea></div>
+  </details>
+
+  <fieldset data-mode="build">
+    <legend>The website itself</legend>
+    <div class="f">
+      <label for="has_domain">Do you already own a domain name?</label>
+      <select id="has_domain" name="has_domain">
+        <option value="">Not sure</option>
+        <option value="no">No, we will sort one out with you</option>
+        <option value="yes">Yes</option>
+      </select>
+    </div>
+    <!-- Separate from the abn field above, which takes the number. This one
+         decides two things before anyone is on a call: a .com.au licence
+         requires the holder to have an active ABN, and without one the business
+         paying an invoice has to withhold 47%. -->
+    <div class="f">
+      <label for="has_abn">Do you have an ABN?</label>
+      <select id="has_abn" name="has_abn">
+        <option value="">Not sure</option>
+        <option value="yes">Yes</option>
+        <option value="no">No</option>
+      </select>
+      <p class="hint" style="margin:.3rem 0 0">Without one we use a .com instead
+         of a .com.au. Applying is free and takes about fifteen minutes.</p>
+    </div>
+    <div class="f"><label for="domain_name">If yes, which one <span class="opt">optional</span></label><input id="domain_name" name="domain_name" type="text" placeholder="yourshop.com.au"></div>
+    <div class="f">
+      <label for="colour_scheme">Colours <span class="opt">optional</span></label>
+      <select id="colour_scheme" name="colour_scheme">
+        <option value="">You choose, something that suits the trade</option>
+        <option value="logo">Match my logo</option>
+        <option value="custom">I have something in mind</option>
+      </select>
+    </div>
+    <div class="f"><label for="colour_custom">If you have something in mind</label><input id="colour_custom" name="colour_custom" type="text"></div>
+    <div class="f"><label for="anything_else">Anything else we should know <span class="opt">optional</span></label><textarea id="anything_else" name="anything_else"></textarea></div>
+  </fieldset>
+
+  <div class="send" id="send" hidden>
+    <button type="submit" id="submit">Send this to Declan</button>
+    <p class="said" id="said" hidden role="status"></p>
+    <p class="note" id="note" data-mode="build">Nothing is charged and nothing is
+       committed. We build the page from this, send you a link, and you decide then.</p>
+    <p class="note" id="note-interest" data-mode="interest">No page gets built from
+       this, because we are not covering your trade yet. It puts you on the list
+       and we will tell you when we are.</p>
+  </div>
+</form>
+
+</div>
+
+<script>
+(function () {
+  var form = document.getElementById('intake');
+  var said = document.getElementById('said');
+
+  /* Injected server-side by functions/f/[code].js. Empty when the page is opened
+     directly, which is how it gets tested. */
+  var pre = {};
+  try { pre = JSON.parse(document.getElementById('prefill').textContent || '{}'); } catch (e) {}
+
+  Object.keys(pre).forEach(function (k) {
+    var el = form.elements[k];
+    if (el && 'value' in el && pre[k]) el.value = pre[k];
+  });
+  if (pre.hours_detail) form.elements.hours_correct.value = 'yes';
+
+  /* ---- which trades we can actually build -----------------------------
+     Only this one has a template. Every other trade gets four fields and an
+     honest answer, because collecting a full brief for something we cannot
+     build would waste their evening and then disappoint them. */
+  var READY = { mechanics: true };
+  var typeStep = document.getElementById('typestep');
+  var typeSel  = form.elements.business_type;
+  var mode = 'choose';                 // choose | build | interest
+
+  function showFor(sel, on) {
+    [].forEach.call(document.querySelectorAll(sel), function (el) { el.hidden = !on; });
+  }
+
+  function setMode(next) {
+    mode = next;
+    var t = typeSel.value;
+    document.getElementById('basics').hidden = (mode === 'choose');
+    document.getElementById('send').hidden = (mode === 'choose');
+    showFor('[data-mode="build"]', mode === 'build');
+    showFor('[data-mode="interest"]', mode === 'interest');
+    /* Trade-specific questions. Everything not marked is common to every trade,
+       which is most of it -- the template config was already trade-agnostic. */
+    [].forEach.call(document.querySelectorAll('[data-trade]'), function (el) {
+      el.hidden = !(mode === 'build' && el.getAttribute('data-trade') === t);
+    });
+
+    document.getElementById('lede').textContent = mode === 'interest'
+      ? 'We are not building for your trade yet. Leave your details and we will tell you when we are.'
+      : 'So we can build your page.';
+    document.getElementById('prefilled-note').hidden = !(mode === 'build' && pre.business_name);
+    document.getElementById('submit').textContent = mode === 'interest'
+      ? 'Put me on the list' : 'Send this to Declan';
+
+    var notYet = document.getElementById('not-yet');
+    if (mode === 'interest') {
+      var label = typeSel.options[typeSel.selectedIndex].text.toLowerCase();
+      notYet.hidden = false;
+      notYet.innerHTML = '<b>We only build for mechanics at the moment.</b> ' +
+        'That is not a brush-off: the template, the questions and the examples are ' +
+        'all built around one trade, and doing ' + (t === 'other' ? 'yours' : label) +
+        ' properly means doing that work rather than pretending it transfers.';
+    } else {
+      notYet.hidden = true;
+    }
+  }
+
+  if (pre.business_type) {
+    typeSel.value = pre.business_type;
+    typeStep.hidden = true;            // we sent them here; asking would be odd
+  }
+  typeSel.addEventListener('change', function () {
+    var t = typeSel.value;
+    document.getElementById('business_type-err').hidden = true;
+    setMode(!t ? 'choose' : READY[t] ? 'build' : 'interest');
+  });
+
+  /* Settle the page before first paint of the form: a cold visitor sees only the
+     trade question, and somebody arriving from /f/<code> never sees it at all. */
+  setMode(!typeSel.value ? 'choose' : READY[typeSel.value] ? 'build' : 'interest');
+
+  /* Validation lives where the field is, and only complains once you have had a
+     go at it. Telling someone a box is empty before they reach it is noise. */
+  var REQUIRED = { build: ['business_name', 'suburb', 'phone', 'email'],
+                   interest: ['business_name', 'suburb', 'contact'] };
+  var live = false;
+  function required() { return REQUIRED[mode] || []; }
+
+  function why(el) {
+    var v = (el.value || '').trim();
+    if (!v) return 'We need this one.';
+    if (el.name === 'phone' && v.replace(/[^0-9]/g, '').length < 8) return 'That looks too short for a phone number.';
+    if (el.name === 'email' && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)) return 'That does not look like an email address.';
+    /* One box taking either, so it accepts both. People write "0412 555 018",
+       and a run-of-digits test rejects it. */
+    if (el.name === 'contact' && v.replace(/[^0-9]/g, '').length < 8 &&
+        !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)) return 'A phone number or an email address.';
+    return '';
+  }
+  function show(el, force) {
+    var msg = why(el);
+    var on = !!msg && (force || live || el.dataset.touched === '1');
+    var box = document.getElementById(el.name + '-err');
+    el.setAttribute('aria-invalid', on ? 'true' : 'false');
+    if (box) { box.textContent = on ? msg : ''; box.hidden = !on; }
+    return !msg;
+  }
+  /* Bound once across every field either mode can require. Which of them is
+     actually checked is decided at submit time by required(). */
+  Object.keys(REQUIRED).reduce(function (all, m) { return all.concat(REQUIRED[m]); }, [])
+    .filter(function (n, i, a) { return a.indexOf(n) === i; })
+    .forEach(function (n) {
+      var el = form.elements[n];
+      if (!el) return;
+      el.addEventListener('blur', function () { el.dataset.touched = '1'; show(el); });
+      el.addEventListener('input', function () { if (live || el.dataset.touched === '1') show(el); });
+    });
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (mode === 'choose') {
+      var te = document.getElementById('business_type-err');
+      te.textContent = 'Pick one so we know what to ask you.';
+      te.hidden = false;
+      typeSel.focus();
+      return;
+    }
+    live = true;
+    var bad = required().map(function (n) { return form.elements[n]; })
+                        .filter(function (el) { return el && !show(el, true); });
+    if (bad.length) {
+      said.hidden = false;
+      said.textContent = bad.length === 1 ? 'One field still needs you.' : bad.length + ' fields still need you.';
+      bad[0].focus();
+      return;
+    }
+
+    /* kind travels with it so a four-field interest row can never be picked up
+       and built as though it were a full brief. */
+    var data = { code: pre.code || '', kind: mode === 'interest' ? 'interest' : 'build' };
+    [].forEach.call(form.elements, function (el) {
+      if (!el.name || el.type === 'submit') return;
+      if (el.closest('[hidden]')) return;        // a hidden mode's fields are not answers
+      if (el.type === 'checkbox') {
+        if (!el.checked) return;
+        (data[el.name] = data[el.name] || []).push(el.value);
+      } else if ((el.value || '').trim()) {
+        data[el.name] = el.value.trim();
+      }
+    });
+    data.business_type = typeSel.value || pre.business_type || '';
+
+    var btn = form.querySelector('button[type=submit]');
+    btn.disabled = true;
+    said.hidden = false;
+    said.textContent = 'Sending…';
+
+    fetch('/api/intake', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data)
+    }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, status: r.status, j: j }; });
+    }).then(function (res) {
+      if (res.ok) {
+        said.textContent = res.j.message || (mode === 'interest'
+          ? 'Got it. We will let you know when we cover your trade.'
+          : 'Got it. We will build your page and send you the link.');
+        form.querySelectorAll('input,textarea,select,button').forEach(function (el) { el.disabled = true; });
+        return;
+      }
+      /* Never say it arrived when it did not. */
+      said.textContent = res.status === 404
+        ? 'Nothing was sent: this form is not connected on this address yet.'
+        : (res.j.message || 'That did not send. Please try again in a moment.');
+      btn.disabled = false;
+    }).catch(function () {
+      said.textContent = 'That did not send — the connection dropped. Nothing was lost; try again.';
+      btn.disabled = false;
+    });
+  });
+})();
+</script>
+</body>
+</html>
