@@ -6,7 +6,7 @@
 <title>Keystock · one page, built once, handed over</title>
 <meta name="description" content="One-page websites for local business in Perth. The domain, the hosting and the enquiry form all go in your name. No monthly fee.">
 <!-- This is a working prototype, not the business's live site: the six demo
-     businesses are invented and the enquiry form goes nowhere yet. It must not
+     businesses are invented. The enquiry form is live on Cloudflare. It must not
      turn up in a search for a Perth web designer while that is true. Remove
      this, and the notice above the form, when the form actually sends. -->
 <meta name="robots" content="noindex, nofollow">
@@ -751,22 +751,24 @@
     <span class="nav__links">
       <a class="hide-sm" href="#get">What you get</a>
       <a class="hide-sm" href="#how">How it works</a>
-      <a class="nav__cta" href="#ask">Get a preview</a>
+      <a class="nav__cta" href="#ask">Get started</a>
     </span>
   </nav>
 
-  <!-- Someone who just had a text from us already has a page. The hub holds no
-       record of who they are: preview projects are named preview-<10 hex> by
-       deploy-demo.js precisely so the business name is not in the URL, which
-       means the code is the address and this needs no lookup, no database and
-       nothing Google-derived in this repo. -->
+  <!-- Two different codes arrive by text at two different moments, and someone
+       who has lost one does not know or care which kind it was. The first is the
+       form link, /f/ plus eight characters. The second, later, is the finished
+       page: preview projects are named preview-<10 hex> by deploy-demo.js
+       precisely so the business name is not in the URL, which means the code is
+       the address and needs no lookup and nothing Google-derived in this repo.
+       Both are taken here and told apart by their shape. -->
   <section class="strip" id="yours">
     <form class="strip__form" id="codeform">
-      <label class="strip__lab" for="code">Had a text from us? Your page is already built.</label>
+      <label class="strip__lab" for="code">Had a text from us? Pick up where you left off.</label>
       <span class="strip__row">
         <input id="code" name="code" type="text" inputmode="latin" autocomplete="off"
-               spellcheck="false" placeholder="preview-8f2c1a90d3" aria-describedby="code-err">
-        <button type="submit">Open my page</button>
+               spellcheck="false" placeholder="the code or link from the message" aria-describedby="code-err">
+        <button type="submit">Take me there</button>
       </span>
       <p class="strip__err" id="code-err" role="status" hidden></p>
     </form>
@@ -788,21 +790,21 @@
 
   <section class="band" id="how">
     <div class="band__head">
-      <h2>We build it before you decide.</h2>
-      <p class="lede">You do not brief us, wait, and hope. The order is the other way round.</p>
+      <h2>You see the finished page before you pay for it.</h2>
+      <p class="lede">You tell us about the business once. We build from your answers, and the first time money comes up you are already looking at the real thing.</p>
     </div>
     <div class="steps">
       <div class="step">
-        <h3>We build your page</h3>
-        <p>From what is already public about your business. You have not spoken to us yet and it costs you nothing.</p>
+        <h3>You tell us about the shop</h3>
+        <p>One form, about ten minutes. Your hours, what you work on, a few photographs. You can stop and come back to it.</p>
       </div>
       <div class="step">
-        <h3>You look at it</h3>
-        <p>A real page at a real address, on your phone. If it is wrong, it is wrong for free.</p>
+        <h3>We build the page</h3>
+        <p>From your answers rather than from guesswork. It costs you nothing and commits you to nothing.</p>
       </div>
       <div class="step">
-        <h3>You decide</h3>
-        <p>One price, paid once, for the design and the build. No retainer and nothing to cancel.</p>
+        <h3>You look at it and decide</h3>
+        <p>A real page at a real address, on your phone, with the price on it. One payment, once. If it is wrong, it is wrong for free.</p>
       </div>
       <div class="step">
         <h3>We hand it over</h3>
@@ -830,16 +832,16 @@
     </div>
     <div class="faq">
       <details class="qa">
-        <summary>I never asked for this. Why is there already a page for my business?</summary>
-        <p>Because it is quicker to show you than to describe it. We build from what is already public about your business, before we have spoken to you. It costs you nothing and commits you to nothing. If you are not interested, ignore us and nothing happens to it.</p>
+        <summary>I never asked for this. Why are you texting me?</summary>
+        <p>Because your number is published for people to ring, and we think a page would earn its keep for you. There is nothing built and nothing owed — the message is an offer and a form, and if you fill the form in we make a start. If you would rather we did not, reply STOP and that is the last you hear from us.</p>
       </details>
       <details class="qa">
         <summary>What does it cost?</summary>
-        <p>One payment, once, for the design and the build. No retainer, no monthly fee, nothing that renews. We quote the number when we send you the page, so you are looking at the real thing and the real price at the same time rather than agreeing to one before you have seen the other.</p>
+        <p>One payment, once, for the design and the build. No retainer, no monthly fee, nothing that renews. We quote the number when we send you the finished page, so you are looking at the real thing and the real price at the same time rather than agreeing to one before you have seen the other. Filling in the form costs nothing and is not an order.</p>
       </details>
       <details class="qa">
-        <summary>What if I look at it and do not want it?</summary>
-        <p>Then you say no and that is the end of it. You have not paid anything, there is no account to close and nothing to cancel. The page comes down.</p>
+        <summary>What if I fill in the form and then change my mind?</summary>
+        <p>Then you say no and that is the end of it. You have not paid anything, there is no account to close and nothing to cancel. The page comes down and we delete what you sent us.</p>
       </details>
       <details class="qa">
         <summary>If I stop paying you, does my site disappear?</summary>
@@ -866,9 +868,9 @@
       <p class="lede">Three boxes to start. Then we send you the form the page gets built from — hours, services, photos, the things only you know.</p>
     </div>
     <form class="form" id="askform" novalidate>
-      <p class="form__proto">This is a preview of a site we are still building.
-        The form below is not connected yet, so nothing you type into it is sent,
-        stored, or seen by anyone.</p>
+      <p class="form__proto">The businesses on the wheel above are invented — we
+        built those pages to show the work, not for clients. Yours would be the
+        real thing.</p>
       <div class="field">
         <label for="shop">Business name</label>
         <input id="shop" name="business_name" type="text" autocomplete="organization" required>
@@ -885,7 +887,7 @@
         <p class="field__err" id="contact-err" hidden></p>
       </div>
       <p class="hp" aria-hidden="true"><label>Leave this empty<input name="company_url" tabindex="-1" autocomplete="off"></label></p>
-      <button type="submit">Get a preview</button>
+      <button type="submit">Get started</button>
       <p class="form__said" id="said" hidden role="status"></p>
       <a class="form__go" id="saidgo" href="#" hidden>Open the form</a>
       <p class="form__note">Free to look, and there is nothing to cancel if you decide against it.</p>
@@ -1344,20 +1346,35 @@
       err.hidden = true; input.removeAttribute('aria-invalid');
     });
 
+    /* The two codes cannot be confused: a finished page is ten characters of
+       hex, a form is eight from an alphabet with no l, o, 0 or 1 in it -- chosen
+       so nobody has to decide whether that is a one or an ell while reading it
+       off a phone. */
+    var FORM_CODE = /^[a-hjkmnp-z2-9]{8}$/;
+
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       /* It arrives in a text message and gets retyped or pasted, so take it
-         however it comes: the whole URL, with the prefix, or ten bare
-         characters with spaces through them. */
-      var v = (input.value || '').toLowerCase();
-      var m = v.match(/preview-([0-9a-f]{10})/);
-      var hex = m ? m[1] : v.replace(/[^0-9a-f]/g, '');
-      if (!hex) return fail(v.trim()
-        ? 'Those characters are not right: the code is digits and the letters a to f.'
-        : 'Paste the code from the text message.');
-      if (hex.length !== 10) return fail('That should be ten characters, like 8f2c1a90d3.');
+         however it comes: the whole link, or the bare code with spaces through
+         it. */
+      var raw = (input.value || '').trim().toLowerCase();
+      if (!raw) return fail('Paste the link or the code from the message.');
+
+      var asPreview = raw.match(/preview-([0-9a-f]{10})/);
+      var asForm = raw.match(/\/f\/([a-z0-9]{6,16})/);
+      var bare = raw.replace(/[^a-z0-9]/g, '');
+
       err.hidden = true; input.removeAttribute('aria-invalid');
-      open('https://preview-' + hex + '.pages.dev/', '_blank', 'noopener');
+
+      if (asPreview) return open('https://preview-' + asPreview[1] + '.pages.dev/', '_blank', 'noopener');
+      if (asForm) return location.assign('/f/' + asForm[1]);
+      if (/^[0-9a-f]{10}$/.test(bare)) return open('https://preview-' + bare + '.pages.dev/', '_blank', 'noopener');
+      if (FORM_CODE.test(bare)) return location.assign('/f/' + bare);
+
+      // Say which one it nearly was, rather than restating both rules.
+      fail(bare.length === 10 || bare.length === 8
+        ? 'Some of those characters are not right. Easiest is to paste the whole link from the message.'
+        : 'That is not a code we recognise — a form link ends in eight characters, a finished page in ten. Pasting the whole link works too.');
     });
   })();
 
