@@ -163,6 +163,45 @@
      else's dashboard is out of date the next time they redesign it, and a
      schematic says where to look without pretending to be the thing itself.
      Each one is sized to be swapped for a real screenshot later. */
+  /* An address or a menu path the reader has to type or find. Set apart so it
+     reads as a thing to look for rather than as emphasis. */
+  .mono { font-family: ui-monospace, "Cascadia Mono", Menlo, Consolas, monospace;
+          font-size: 0.94em; color: var(--ink); }
+
+  .aside { color: var(--soft); font-size: 0.9rem; border-left: 2px solid var(--line-firm);
+           padding-left: 0.9rem; margin: 1.4rem 0 0; }
+
+  /* ---- annotated screenshots ------------------------------------------
+     A real screenshot with numbered pins over it and the explanations as
+     ordinary text underneath. The pins are placed in percentages so they
+     stay put as the image scales, and the words are never baked into the
+     pixels — which keeps them selectable, translatable, and legible to a
+     screen reader. When a vendor moves a button, swap the PNG and nudge two
+     numbers rather than redrawing anything. */
+  .shot { margin: 0 0 1.4rem; }
+  .shot__wrap { position: relative; display: block; border: 1px solid var(--line-firm);
+                border-radius: 3px; overflow: hidden; background: var(--surface); }
+  .shot__wrap img { display: block; width: 100%; height: auto; }
+  .shot__pin {
+    position: absolute; left: var(--x); top: var(--y); transform: translate(-50%, -50%);
+    width: 1.55rem; height: 1.55rem; border-radius: 50%;
+    display: grid; place-items: center;
+    background: var(--accent); color: #0b0b0c;
+    font-size: 0.82rem; font-weight: 700; font-style: normal;
+    box-shadow: 0 0 0 3px rgba(0,0,0,0.55);
+  }
+  .shot__key { counter-reset: pin; list-style: none; margin: 0.9rem 0 0; padding: 0;
+               display: grid; gap: 0.45rem; }
+  .shot__key li { position: relative; padding-left: 2.1rem; font-size: 0.94rem; }
+  .shot__key li::before {
+    counter-increment: pin; content: counter(pin);
+    position: absolute; left: 0; top: 0.05rem;
+    width: 1.4rem; height: 1.4rem; border-radius: 50%;
+    display: grid; place-items: center;
+    background: var(--accent); color: #0b0b0c; font-size: 0.76rem; font-weight: 700;
+  }
+  .shot figcaption { color: var(--soft); font-size: 0.85rem; margin-top: 0.7rem; }
+
   .fig { margin: 0 0 1.2rem; }
   .fig__frame {
     border: 1px solid var(--line-firm); border-radius: 3px; background: var(--surface);
@@ -261,6 +300,10 @@
      your own website afterwards. Written for people who do not work in websites.</p>
 </header>
 
+<!-- impeccable-disable first-viewport-column-overflow -- reference page: the
+     contents collapses to a toggle above a deliberately long article. The two
+     columns are a nav and a document, not a balanced pair, and capping the
+     article would be the wrong fix. Verified by screenshot at 390px. -->
 <div class="shell">
 
   <details class="toc" id="toc">
@@ -270,9 +313,10 @@
       <ol>
         <li><a href="#who">Who does what</a></li>
         <li><a href="#own">What you end up owning</a></li>
-        <li><a href="#ready">Before we start</a></li>
+        <li><a href="#ready">Before you start</a></li>
+        <li><a href="#account">Your account</a></li>
         <li><a href="#domain">Your domain name</a></li>
-        <li><a href="#hosting">Your hosting</a></li>
+        <li><a href="#access">Letting us put the site on it</a></li>
         <li><a href="#form">Your enquiry form</a></li>
         <li><a href="#edit">Changing your site</a></li>
         <li><a href="#working">Keeping it working</a></li>
@@ -292,36 +336,38 @@
 
       <div class="split">
         <div class="split__row"><p class="split__what">Designing and building the site</p><p class="split__who" data-who="us">We do it</p></div>
-        <div class="split__row"><p class="split__what">Choosing and checking a domain name is free</p><p class="split__who" data-who="us">We do it</p></div>
-        <div class="split__row"><p class="split__what">Paying for the domain</p><p class="split__who" data-who="you">Yours</p></div>
-        <div class="split__row"><p class="split__what">Your ABN, for a <em>.com.au</em> name</p><p class="split__who" data-who="you">Yours</p></div>
-        <div class="split__row"><p class="split__what">Opening the three accounts, on your email</p><p class="split__who" data-who="you">Yours</p></div>
-        <div class="split__row"><p class="split__what">Clicking the confirmation link in each email</p><p class="split__who" data-who="you">Yours</p></div>
-        <div class="split__row"><p class="split__what">Connecting the domain, the hosting and the form together</p><p class="split__who" data-who="us">We do it</p></div>
-        <div class="split__row"><p class="split__what">Putting the site live and testing it</p><p class="split__who" data-who="us">We do it</p></div>
-        <div class="split__row"><p class="split__what">Choosing the password on each account</p><p class="split__who" data-who="you">Yours</p></div>
+        <div class="split__row"><p class="split__what">Finding you a domain name that is free</p><p class="split__who" data-who="us">We do it</p></div>
+        <div class="split__row"><p class="split__what">Opening one account, on your email</p><p class="split__who" data-who="you">Yours</p></div>
+        <div class="split__row"><p class="split__what">Choosing your own password</p><p class="split__who" data-who="you">Yours</p></div>
+        <div class="split__row"><p class="split__what">Paying for the domain, about $12 a year</p><p class="split__who" data-who="you">Yours</p></div>
+        <div class="split__row"><p class="split__what">Clicking the two confirmation emails</p><p class="split__who" data-who="you">Yours</p></div>
+        <div class="split__row"><p class="split__what">Inviting us in, and removing us afterwards</p><p class="split__who" data-who="you">Yours</p></div>
+        <div class="split__row"><p class="split__what">Putting the site up and connecting the domain</p><p class="split__who" data-who="us">We do it</p></div>
+        <div class="split__row"><p class="split__what">Setting up the contact form</p><p class="split__who" data-who="us">We do it</p></div>
+        <div class="split__row"><p class="split__what">Checking it all works before we call it done</p><p class="split__who" data-who="us">We do it</p></div>
       </div>
 
       <div class="note">
         <p><span class="note__h">Your whole job, in one line</span>
-          Open three accounts on your own email, click the confirmation link in each,
-          choose your own passwords, and pay for the domain. Everything technical on this
-          page is ours, and we check each part works before we call it done.</p>
+          Open one account on your own email, buy the domain inside it, and invite us in
+          for long enough to put the site up. Everything technical on this page is ours,
+          and we check each part works before we call it done.</p>
       </div>
     </section>
 
     <section id="own">
       <h2>What you end up owning</h2>
-      <p>Three accounts and a folder of files. All three accounts are in your name, with
-        your email on them and a password only you know.</p>
+      <p>One account and a folder of files. The account is in your name, with your email
+        on it and a password only you know — we never have it.</p>
 
       <ul class="plain">
-        <li><strong>Your domain name.</strong> The address people type. Around $20&ndash;30 a
-          year, paid by you to the registrar. Nobody else can take it while it is renewed.</li>
-        <li><strong>Your hosting.</strong> Where the site actually sits. Free at the size of a
-          one-page site, and it stays free.</li>
+        <li><strong>Your domain name.</strong> The address people type. Around $12 a year,
+          at cost, on your card. Nobody else can take it while it is renewed.</li>
+        <li><strong>Your hosting.</strong> Where the site actually sits, in the same account
+          as the domain. Free at the size of a one-page site, and it stays free.</li>
         <li><strong>Your enquiry form.</strong> The thing that emails you when somebody fills
-          in the contact form. It sends to your inbox, through an account in your name.</li>
+          in the contact form. It runs inside the same account and costs nothing, however
+          many enquiries you get.</li>
         <li><strong>The files.</strong> The website itself, and your photographs.</li>
       </ul>
 
@@ -330,154 +376,199 @@
     </section>
 
     <section id="ready">
-      <h2>Before we start</h2>
-      <p class="lede">Three things to have on hand before you start. We send you a link
-        and you work through it a step at a time, on your phone, whenever suits you. You
-        can stop part-way and pick it up later. Most people are done inside half an hour.</p>
+      <h2>Before you start</h2>
+      <p class="lede">Two things to have on hand. There is no software to install and
+        nothing to download — it all happens in a browser, and you can do it on a
+        phone.</p>
 
       <h3>An email address you will still have in five years</h3>
-      <p>This is the important one. Every account gets built on it, and it is how you prove
-        the domain is yours if anything is ever disputed. A personal address you have had
-        for years is better than a new one made for the business, and far better than one
+      <p>This is the important one. Everything gets built on it, and it is how you prove
+        the site is yours if it is ever disputed. A personal address you have had for
+        years is better than a new one made for the business, and far better than one
         that belongs to an internet provider you might leave.</p>
 
-      <h3>Your ABN, if you want a .com.au name</h3>
-      <p>Australian rules require whoever holds a <em>.com.au</em> to have an active ABN or ACN
-        connected to the name, and it has to stay active for as long as you hold the domain.
-        A sole trader's personal ABN is fine. We cannot use ours — the rules require it to be
-        the business the name belongs to.</p>
-
-      <div class="note">
-        <p><span class="note__h">No ABN?</span>
-          Two options, both fine. Applying for one is free and takes about fifteen minutes on
-          the Australian Business Register. Or we use a <em>.com</em> instead, which has no
-          eligibility rules at all and costs about the same.</p>
-      </div>
-
       <h3>A card, for the domain</h3>
-      <p>The domain is the one thing with a running cost, and it needs to be on your card so
-        the renewal is yours and never lapses because of us. It is the only payment detail
-        anyone will ask you for.</p>
+      <p>The domain name is the one thing with a running cost — around $12 a year. It
+        goes on your card so the renewal is yours and never lapses because of us. It is
+        the only payment detail anyone will ask you for.</p>
+
+      <div class="trouble">
+        <details>
+          <summary>Why not a <em>.com.au</em>?</summary>
+          <p>You can have one, and some people prefer the local look. It costs you more
+            work: <em>.com.au</em> has to be bought from a separate Australian company,
+            it requires an active ABN held in the same name for as long as you keep the
+            domain, and it adds a step where you copy settings between two accounts.</p>
+          <p>A <em>.com</em> needs no ABN, costs about the same, and is bought in the
+            same place as everything else — which is why it is what we suggest. Tell us
+            if you would rather have the <em>.com.au</em> and we will walk you through
+            the extra part.</p>
+        </details>
+      </div>
+    </section>
+
+    <section id="account">
+      <h2>Your account</h2>
+      <p class="lede">One account holds everything: the domain, the website, and the
+        contact form. It is free, it is in your name, and it takes about a minute to
+        make.</p>
+
+      <ol class="steps">
+        <li class="step">
+          <h3>Go to <span class="mono">dash.cloudflare.com/sign-up</span></h3>
+          <p>Cloudflare is the company that will hold your domain and run your site.
+            They are one of the largest on the internet; you have used them today
+            without noticing.</p>
+        </li>
+        <li class="step">
+          <h3>Enter your email and choose a password</h3>
+          <p>Use the email address from the last page. <strong>Choose the password
+            yourself and write it down somewhere real.</strong> We never see it and we
+            will never ask for it — anyone who does ask is not us.</p>
+          <figure class="fig">
+            <div class="fig__frame">
+              <div class="fig__bar"><span class="fig__dot"></span><span class="fig__dot"></span><span class="fig__dot"></span><span class="fig__addr">dash.cloudflare.com &middot; sign up</span></div>
+              <div class="fig__body">
+                <span class="fig__label">Email</span>
+                <div class="fig__field" data-fill>the address you will still have in five years</div>
+                <span class="fig__label">Password</span>
+                <div class="fig__field" data-fill>&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;</div>
+                <span class="fig__mark">Yours. Write it down before you click.</span>
+              </div>
+            </div>
+          </figure>
+        </li>
+        <li class="step">
+          <h3>Click the confirmation email</h3>
+          <p>They email you to check the address is real. Click the link. If it has not
+            arrived in a few minutes, look in spam.</p>
+        </li>
+      </ol>
+
+      <p class="aside">That is the only account you will make. The old way of doing this
+        needed three.</p>
     </section>
 
     <section id="domain">
       <h2>Your domain name</h2>
-      <p class="lede">The address people type to reach you. We check what is available and
-        fill in the form; you pay and confirm.</p>
+      <p class="lede">The address people type to reach you. You buy it inside the account
+        you just made, which is why there is nothing to connect up afterwards.</p>
 
       <ol class="steps">
         <li class="step">
-          <h3>We find you a name that is free</h3>
+          <h3>We send you two or three names that are free</h3>
           <p>Usually your business name and suburb in some combination. We check what is
-             actually free and give you two or three to pick from, so you are choosing
-             rather than hoping.</p>
+            actually available first, so you are choosing rather than hoping.</p>
         </li>
         <li class="step">
-          <h3>We fill in the registration</h3>
-          <p>Your business name, your ABN, your email, your address. You are listed as the
-            owner of the name — that is the part that matters, and it is why we need your
-            details rather than ours.</p>
+          <h3>In your account, open <strong>Domain Registration &rarr; Register Domain</strong></h3>
+          <p>Search for the name we sent you and add it.</p>
+        </li>
+        <li class="step">
+          <h3>You pay, and you turn auto-renew on</h3>
+          <p>Around $12 for the year, on your card. Cloudflare sells domains at cost —
+            they do not mark them up — so this is about as cheap as the name gets.</p>
+          <p><strong>Turn auto-renew on while you are there.</strong> It is the single
+            most useful switch on this page.</p>
           <figure class="fig">
             <div class="fig__frame">
-              <div class="fig__bar"><span class="fig__dot"></span><span class="fig__dot"></span><span class="fig__dot"></span><span class="fig__addr">your registrar &middot; new domain</span></div>
+              <div class="fig__bar"><span class="fig__dot"></span><span class="fig__dot"></span><span class="fig__dot"></span><span class="fig__addr">your account &middot; register domain</span></div>
               <div class="fig__body">
-                <span class="fig__label">Registrant name</span>
+                <span class="fig__label">Registrant</span>
                 <div class="fig__field" data-fill>Your business name</div>
-                <span class="fig__label">ABN</span>
-                <div class="fig__field" data-fill>Your ABN</div>
                 <span class="fig__label">Email</span>
-                <div class="fig__field" data-fill>The address you gave us</div>
-                <span class="fig__mark">Check these three are yours, not ours</span>
+                <div class="fig__field" data-fill>The address you signed up with</div>
+                <span class="fig__label">Auto-renew</span>
+                <div class="fig__field" data-fill>On</div>
+                <span class="fig__mark">Check the name is spelled exactly right before you pay</span>
               </div>
             </div>
-            <figcaption>The only screen worth reading carefully. If any of those three say
-              anything other than your business, stop us.</figcaption>
           </figure>
-        </li>
-        <li class="step">
-          <h3>You pay</h3>
-          <p>Your card, about $20&ndash;30 for the year. Turn <strong>auto-renew on</strong> while
-            you are there. It is the single most useful switch on this page.</p>
-        </li>
-        <li class="step">
-          <h3>You click the confirmation email</h3>
-          <p>The registrar emails the address you gave us to check it is real. Click the link.
-            If it does not arrive within a few minutes, look in spam.</p>
         </li>
       </ol>
 
-      <div class="note" data-kind="watch">
-        <p><span class="note__h">The one thing that can really go wrong</span>
-          If the domain lapses, the site goes dark and somebody else can buy your name. That
-          is why auto-renew goes on now and why the card should be one that will not expire
-          and be forgotten. Put a yearly reminder in your phone as well.</p>
+      <div class="trouble">
+        <details>
+          <summary>The one thing that can really go wrong</summary>
+          <p>If the domain lapses, the site goes dark and somebody else can buy your
+            name. That is why auto-renew goes on now, and why the card should be one
+            that will not quietly expire. Put a yearly reminder in your phone as
+            well.</p>
+        </details>
+        <details>
+          <summary>Nobody asked me to change any settings. Is that right?</summary>
+          <p>Yes. Because the domain was bought in the same account that runs the site,
+            the two are already connected. Buying it somewhere else is what creates the
+            fiddly step, and that is exactly the step we removed.</p>
+        </details>
       </div>
     </section>
 
-    <section id="hosting">
-      <h2>Your hosting</h2>
-      <p class="lede">Where the site actually lives. Free at this size, and it is an account
-        in your name so we can hand it over and step away.</p>
+    <section id="access">
+      <h2>Letting us put the site on it</h2>
+      <p class="lede">One invitation, which you can withdraw the moment we are finished.
+        Your password is never part of this.</p>
 
       <ol class="steps">
         <li class="step">
-          <h3>You open the account, on your email</h3>
-          <p>You open it yourself, on your own email, and choose the password there and
-             then. We never see it. That one detail is what makes the account yours
-             rather than ours.</p>
+          <h3>In your account, open <strong>Manage Account &rarr; Members</strong></h3>
+          <p>Then <strong>Invite Member</strong>.</p>
         </li>
         <li class="step">
-          <h3>You click the confirmation email</h3>
-          <p>Same as before: they email you to check the address is real.</p>
+          <h3>Invite the address we give you, as an Administrator</h3>
+          <p>This lets us upload your website and set up your contact form. It does not
+            let us change your password, see your card, or take the domain.</p>
           <figure class="fig">
             <div class="fig__frame">
-              <div class="fig__bar"><span class="fig__dot"></span><span class="fig__dot"></span><span class="fig__dot"></span><span class="fig__addr">your inbox</span></div>
+              <div class="fig__bar"><span class="fig__dot"></span><span class="fig__dot"></span><span class="fig__dot"></span><span class="fig__addr">your account &middot; members</span></div>
               <div class="fig__body">
-                <span class="fig__label">From your new host</span>
-                <div class="fig__field" data-fill>Please confirm your email address</div>
-                <span class="fig__btn" data-ghost>Confirm email</span>
-                <span class="fig__mark">One click, then carry on</span>
+                <span class="fig__label">Invite</span>
+                <div class="fig__field" data-fill>the address we sent you</div>
+                <span class="fig__label">Role</span>
+                <div class="fig__field" data-fill>Administrator</div>
+                <span class="fig__mark">You can remove this again in two clicks</span>
               </div>
             </div>
-            <figcaption>Two of these arrive, one for hosting and one for the form. They
-               look almost identical.</figcaption>
           </figure>
         </li>
         <li class="step">
-          <h3>You let us put the site on it</h3>
-          <p>One button in your hosting account invites us in as a helper. It lets us
-             upload your site and nothing else, and you can withdraw it from the same
-             screen the moment we are finished. Your password stays yours throughout — we
-             never ask for it, and you should never give it to anybody who does.</p>
+          <h3>We build it and tell you when it is live</h3>
+          <p>This is the part that is entirely ours: putting the site up, pointing your
+            domain at it, turning on the security certificate, and setting up the
+            contact form. You do not need to be there. It usually takes us under an
+            hour and you get a message when your name brings up your site.</p>
         </li>
         <li class="step">
-          <h3>We connect your domain and put it live</h3>
-          <p>This is the fiddly part and it is entirely ours. When it is finished, typing your
-            domain into a phone brings up your site.</p>
+          <h3>When we are done, remove us</h3>
+          <p>Same screen, <strong>Remove</strong> next to our name. Nothing breaks — your
+            site keeps running exactly as it is. We would rather you did this than
+            forgot.</p>
         </li>
       </ol>
     </section>
 
     <section id="form">
       <h2>Your enquiry form</h2>
-      <p class="lede">The thing that emails you when somebody fills in the contact form on
-        your site. Same pattern: we set it up, you confirm and take the password.</p>
+      <p class="lede">The thing that emails you when somebody fills in the contact form
+        on your site. There is no separate account and nothing to pay — it runs inside
+        the account you already made.</p>
 
       <ol class="steps">
         <li class="step">
-          <h3>You open it on your email, and tell us where enquiries go</h3>
-          <p>You tell us which address enquiries should land in. It can be different from the
-            one the accounts are built on.</p>
+          <h3>You tell us which inbox enquiries should land in</h3>
+          <p>It can be a different address from the one the account is built on. Plenty
+            of people want the accounts on a personal address and the enquiries on a
+            work one.</p>
         </li>
         <li class="step">
-          <h3>You click the confirmation email</h3>
-          <p>The third and last one.</p>
+          <h3>You click one more confirmation email</h3>
+          <p>Cloudflare checks that the inbox is really yours before it will send
+            anything to it. Click the link, and check spam if it is slow.</p>
         </li>
         <li class="step">
-          <h3>We send a test enquiry and you watch it arrive</h3>
-          <p>We fill in your own contact form and you tell us it landed. You are checking
-             the real thing works rather than taking our word for it, which is the point
-             of doing it now instead of finding out in six months.</p>
+          <h3>We send a test enquiry and you tell us it landed</h3>
+          <p>We fill in your own contact form while you have your inbox open. You are
+            checking the real thing works rather than taking our word for it.</p>
           <figure class="fig">
             <div class="fig__frame">
               <div class="fig__bar"><span class="fig__dot"></span><span class="fig__dot"></span><span class="fig__dot"></span><span class="fig__addr">your inbox</span></div>
@@ -487,15 +578,19 @@
                 <span class="fig__mark">If this does not arrive, we are not finished</span>
               </div>
             </div>
-            <figcaption>Check the spam folder too, and mark it "not spam" if it lands there.
-              That teaches your mail provider to trust the next one.</figcaption>
           </figure>
-        </li>
-        <li class="step">
-          <h3>You let us connect it to your site</h3>
-          <p>Third and last.</p>
+          <p><strong>Check the spam folder too</strong>, and mark it "not spam" if it
+            lands there. That teaches your mail provider to trust the next one.</p>
         </li>
       </ol>
+
+      <div class="trouble">
+        <details>
+          <summary>Is there a limit on how many enquiries I can get?</summary>
+          <p>No. Because the form sends to an address you have confirmed is yours, it
+            does not count against any quota — it is free however busy you get.</p>
+        </details>
+      </div>
     </section>
 
     <section id="edit">
@@ -568,8 +663,9 @@
       <div class="trouble">
         <details>
           <summary>The site will not load at all</summary>
-          <p>Nine times out of ten the domain has lapsed. Log in to your registrar and look at
-            whether it is expired — if it is, renewing usually brings the site straight back.</p>
+          <p>Nine times out of ten the domain has lapsed. Open your account, go to
+            <strong>Domain Registration</strong>, and see whether it says expired — if it
+            does, renewing usually brings the site straight back within the hour.</p>
           <p>If the domain is fine, check whether it is only you: try it on mobile data with
             the wi-fi off. If it works there, the problem is your own connection, not the site.</p>
         </details>
@@ -577,8 +673,8 @@
           <summary>Enquiries have stopped arriving</summary>
           <p>Send yourself one through the form. If it arrives, they were probably going to
             spam — find an old one, mark it "not spam", and add the sender to your contacts.</p>
-          <p>If it does not arrive, log in to the form account and check it has not hit a
-            monthly limit or had the email address changed.</p>
+          <p>If it does not arrive at all, tell us. There is no monthly limit to run into
+            and nothing for you to reconfigure — it is ours to look at.</p>
         </details>
         <details>
           <summary>Something on the site is wrong or out of date</summary>
@@ -594,10 +690,10 @@
             through it than through the site.</p>
         </details>
         <details>
-          <summary>I have lost the password to one of the accounts</summary>
-          <p>Every one of them has "forgot password", and they all send the reset to the email
-            address the account was built on. That is why that address matters more than the
-            passwords do.</p>
+          <summary>I have lost my password</summary>
+          <p>Use "forgot password" on the sign-in page. The reset goes to the email address
+            the account was built on — which is why that address matters more than the
+            password does, and why it should be one you will keep.</p>
         </details>
       </div>
     </section>
@@ -611,13 +707,14 @@
         end, because nothing of yours runs through us.</p>
 
       <ul class="plain">
-        <li><strong>To another designer.</strong> Give them the logins to the three accounts
-          and the folder of files. That is genuinely all there is.</li>
-        <li><strong>To a different host.</strong> Your domain is not tied to your hosting. Point
-          it wherever you like, whenever you like.</li>
-        <li><strong>Away from the website entirely.</strong> Cancel the hosting and the form.
-          Keep the domain if you ever want it again — it is cheap, and it stops anyone else
-          using your name.</li>
+        <li><strong>To another designer.</strong> Give them the login to your account and
+          the folder of files. That is genuinely all there is.</li>
+        <li><strong>To a different host.</strong> Your domain is not tied to where the site
+          is hosted. Point it wherever you like, whenever you like, from your own
+          account.</li>
+        <li><strong>Away from the website entirely.</strong> Delete the site from your
+          account. Keep the domain if you ever want it again — it is cheap, and it stops
+          anyone else using your name.</li>
       </ul>
 
       <p>If you want us to help hand it over, we will, and we will not charge you for that.</p>
