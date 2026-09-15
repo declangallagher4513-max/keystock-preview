@@ -190,9 +190,47 @@
     font-size: 0.82rem; font-weight: 700; font-style: normal;
     box-shadow: 0 0 0 3px rgba(0,0,0,0.55);
   }
+  /* A numbered ring around the thing being pointed at, rather than a dot on top
+     of it. The first version put a filled badge at the target's centre, which
+     landed accurately and then covered the exact words the reader needed —
+     "Registrations", "Invite members". The box outlines instead, and the number
+     sits on its corner where controls have no content. */
+  .shot__box {
+    position: absolute; left: var(--x); top: var(--y);
+    width: var(--w); height: var(--h);
+    border: 2px solid var(--accent); border-radius: 4px;
+    box-shadow: 0 0 0 2px rgba(0,0,0,0.45);
+  }
+  .shot__box::before {
+    content: attr(data-n);
+    position: absolute; left: 0; top: 0; transform: translate(-50%, -50%);
+    width: 1.45rem; height: 1.45rem; border-radius: 50%;
+    display: grid; place-items: center;
+    background: var(--accent); color: #0b0b0c;
+    font-size: 0.78rem; font-weight: 700; font-style: normal;
+    box-shadow: 0 0 0 2px rgba(0,0,0,0.55);
+  }
+
+  /* A grid item defaults to min-width:auto and will not shrink below its own
+     content, so the wide picture's minimum pushed the whole page sideways
+     instead of scrolling inside its own box. This is the line that keeps the
+     scrolling local to the figure. */
+  main { min-width: 0; }
+  .shot__scroll { overflow-x: auto; overscroll-behavior-x: contain; }
+  @media (max-width: 40rem) {
+    /* Only the wide ones. The tall sign-up and invite crops are legible as they
+       are and must not gain a scrollbar for nothing. */
+    .shot--wide .shot__wrap { min-width: 34rem; }
+    .shot--wide .shot__scroll::after {
+      content: "Scroll sideways to see the whole screen";
+      display: block; font-size: 0.78rem; color: var(--soft); padding: 0.4rem 0 0;
+    }
+  }
+
   .shot__key { counter-reset: pin; list-style: none; margin: 0.9rem 0 0; padding: 0;
                display: grid; gap: 0.45rem; }
-  .shot__key li { position: relative; padding-left: 2.1rem; font-size: 0.94rem; }
+  .shot__key li { position: relative; padding-left: 2.1rem; font-size: 0.94rem;
+                  max-width: 34rem; text-wrap: pretty; }
   .shot__key li::before {
     counter-increment: pin; content: counter(pin);
     position: absolute; left: 0; top: 0.05rem;
@@ -200,7 +238,8 @@
     display: grid; place-items: center;
     background: var(--accent); color: #0b0b0c; font-size: 0.76rem; font-weight: 700;
   }
-  .shot figcaption { color: var(--soft); font-size: 0.85rem; margin-top: 0.7rem; }
+  .shot figcaption { color: var(--soft); font-size: 0.85rem; margin-top: 0.7rem;
+                     max-width: 34rem; text-wrap: pretty; }
 
   .fig { margin: 0 0 1.2rem; }
   .fig__frame {
@@ -339,7 +378,7 @@
         <div class="split__row"><p class="split__what">Finding you a domain name that is free</p><p class="split__who" data-who="us">We do it</p></div>
         <div class="split__row"><p class="split__what">Opening one account, on your email</p><p class="split__who" data-who="you">Yours</p></div>
         <div class="split__row"><p class="split__what">Choosing your own password</p><p class="split__who" data-who="you">Yours</p></div>
-        <div class="split__row"><p class="split__what">Paying for the domain, about $12 a year</p><p class="split__who" data-who="you">Yours</p></div>
+        <div class="split__row"><p class="split__what">Paying for the domain, about $10.50 a year</p><p class="split__who" data-who="you">Yours</p></div>
         <div class="split__row"><p class="split__what">Clicking the two confirmation emails</p><p class="split__who" data-who="you">Yours</p></div>
         <div class="split__row"><p class="split__what">Inviting us in, and removing us afterwards</p><p class="split__who" data-who="you">Yours</p></div>
         <div class="split__row"><p class="split__what">Putting the site up and connecting the domain</p><p class="split__who" data-who="us">We do it</p></div>
@@ -361,7 +400,7 @@
         on it and a password only you know — we never have it.</p>
 
       <ul class="plain">
-        <li><strong>Your domain name.</strong> The address people type. Around $12 a year,
+        <li><strong>Your domain name.</strong> The address people type. About $10.50 a year,
           at cost, on your card. Nobody else can take it while it is renewed.</li>
         <li><strong>Your hosting.</strong> Where the site actually sits, in the same account
           as the domain. Free at the size of a one-page site, and it stays free.</li>
@@ -388,9 +427,9 @@
         that belongs to an internet provider you might leave.</p>
 
       <h3>A card, for the domain</h3>
-      <p>The domain name is the one thing with a running cost — around $12 a year. It
-        goes on your card so the renewal is yours and never lapses because of us. It is
-        the only payment detail anyone will ask you for.</p>
+      <p>The domain name is the one thing with a running cost — about $10.50 a year at
+        the time of writing. It goes on your card so the renewal is yours and never
+        lapses because of us. It is the only payment detail anyone will ask you for.</p>
 
       <div class="trouble">
         <details>
@@ -410,8 +449,7 @@
     <section id="account">
       <h2>Your account</h2>
       <p class="lede">One account holds everything: the domain, the website, and the
-        contact form. It is free, it is in your name, and it takes about a minute to
-        make.</p>
+        contact form. It is free, it is in your name, and it takes about a minute.</p>
 
       <ol class="steps">
         <li class="step">
@@ -419,29 +457,43 @@
           <p>Cloudflare is the company that will hold your domain and run your site.
             They are one of the largest on the internet; you have used them today
             without noticing.</p>
-        </li>
-        <li class="step">
-          <h3>Enter your email and choose a password</h3>
-          <p>Use the email address from the last page. <strong>Choose the password
-            yourself and write it down somewhere real.</strong> We never see it and we
-            will never ask for it — anyone who does ask is not us.</p>
-          <figure class="fig">
-            <div class="fig__frame">
-              <div class="fig__bar"><span class="fig__dot"></span><span class="fig__dot"></span><span class="fig__dot"></span><span class="fig__addr">dash.cloudflare.com &middot; sign up</span></div>
-              <div class="fig__body">
-                <span class="fig__label">Email</span>
-                <div class="fig__field" data-fill>the address you will still have in five years</div>
-                <span class="fig__label">Password</span>
-                <div class="fig__field" data-fill>&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;</div>
-                <span class="fig__mark">Yours. Write it down before you click.</span>
-              </div>
-            </div>
+          <figure class="shot">
+            <div class="shot__scroll"><div class="shot__wrap">
+              <img src="shots/signup.png" width="978" height="1500" loading="lazy"
+                   alt="The Cloudflare sign-up page: buttons to continue with Google, Apple or GitHub, then an email and password field, then a Sign up button.">
+              <b class="shot__box" data-n="1" style="--x:3.9%;--y:13.7%;--w:91.9%;--h:5.3%"></b>
+              <b class="shot__box" data-n="2" style="--x:3.9%;--y:42.7%;--w:91.9%;--h:4.7%"></b>
+              <b class="shot__box" data-n="3" style="--x:3.9%;--y:53.8%;--w:91.9%;--h:4.9%"></b>
+              <b class="shot__box" data-n="4" style="--x:3.9%;--y:92.9%;--w:91.9%;--h:4.9%"></b>
+            </div></div>
+            <ol class="shot__key">
+              <li><strong>If you have a Gmail address, use "Continue with Google".</strong>
+                It is the quickest way in and there is no new password to remember or
+                lose. The account is just as much yours either way.</li>
+              <li>Otherwise, type the email address you chose on the last page.</li>
+              <li>And pick a password. <strong>Write it down somewhere real before you
+                click.</strong> We never see it and we will never ask for it — anybody
+                who does ask is not us.</li>
+              <li>Sign up.</li>
+            </ol>
           </figure>
         </li>
+
         <li class="step">
           <h3>Click the confirmation email</h3>
-          <p>They email you to check the address is real. Click the link. If it has not
+          <p>They email you straight away to check the address is real. If it has not
             arrived in a few minutes, look in spam.</p>
+          <figure class="shot">
+            <div class="shot__scroll"><div class="shot__wrap">
+              <img src="shots/verify.png" width="1180" height="619" loading="lazy"
+                   alt="The Cloudflare email headed 'Your account needs a confirmed email address', with an orange Verify your email button.">
+              <b class="shot__box" data-n="1" style="--x:7%;--y:65%;--w:24.9%;--h:11.1%"></b>
+            </div></div>
+            <ol class="shot__key">
+              <li>One click on <strong>Verify your email</strong>, and you are done with
+                this part.</li>
+            </ol>
+          </figure>
         </li>
       </ol>
 
@@ -452,7 +504,7 @@
     <section id="domain">
       <h2>Your domain name</h2>
       <p class="lede">The address people type to reach you. You buy it inside the account
-        you just made, which is why there is nothing to connect up afterwards.</p>
+        you just made, which is the reason there is nothing to connect up afterwards.</p>
 
       <ol class="steps">
         <li class="step">
@@ -460,29 +512,71 @@
           <p>Usually your business name and suburb in some combination. We check what is
             actually available first, so you are choosing rather than hoping.</p>
         </li>
+
         <li class="step">
-          <h3>In your account, open <strong>Domain Registration &rarr; Register Domain</strong></h3>
-          <p>Search for the name we sent you and add it.</p>
+          <h3>Find the domain page and search for it</h3>
+          <figure class="shot shot--wide">
+            <div class="shot__scroll"><div class="shot__wrap">
+              <img src="shots/domain-find.png" width="1320" height="585" loading="lazy"
+                   alt="The Cloudflare dashboard on the Registrations page, with Domains open in the left menu and a search box in the middle of the page.">
+              <b class="shot__box" data-n="1" style="--x:3%;--y:35.9%;--w:9.6%;--h:4.9%"></b>
+              <b class="shot__box" data-n="2" style="--x:40.8%;--y:75.1%;--w:32.7%;--h:5.9%"></b>
+            </div></div>
+            <ol class="shot__key">
+              <li>In the menu down the left, open <strong>Domains</strong>, then
+                <strong>Registrations</strong>.</li>
+              <li>Type the name we sent you into the search box and press
+                <strong>Search</strong>. It will say whether it is free and what it
+                costs.</li>
+            </ol>
+            <figcaption>It will say "No domains registered with Cloudflare yet". That is
+              expected — you are about to register the first one.</figcaption>
+          </figure>
         </li>
+
         <li class="step">
-          <h3>You pay, and you turn auto-renew on</h3>
-          <p>Around $12 for the year, on your card. Cloudflare sells domains at cost —
-            they do not mark them up — so this is about as cheap as the name gets.</p>
-          <p><strong>Turn auto-renew on while you are there.</strong> It is the single
-            most useful switch on this page.</p>
-          <figure class="fig">
-            <div class="fig__frame">
-              <div class="fig__bar"><span class="fig__dot"></span><span class="fig__dot"></span><span class="fig__dot"></span><span class="fig__addr">your account &middot; register domain</span></div>
-              <div class="fig__body">
-                <span class="fig__label">Registrant</span>
-                <div class="fig__field" data-fill>Your business name</div>
-                <span class="fig__label">Email</span>
-                <div class="fig__field" data-fill>The address you signed up with</div>
-                <span class="fig__label">Auto-renew</span>
-                <div class="fig__field" data-fill>On</div>
-                <span class="fig__mark">Check the name is spelled exactly right before you pay</span>
-              </div>
-            </div>
+          <h3>Fill in who owns it</h3>
+          <p>This is the part that makes the name legally yours, so it is your details
+            here and not ours.</p>
+          <figure class="shot shot--wide">
+            <div class="shot__scroll"><div class="shot__wrap">
+              <img src="shots/domain-details.png" width="1320" height="982" loading="lazy"
+                   alt="The Registrant information form, with fields for first name, last name, email, organisation, phone and country.">
+              <b class="shot__box" data-n="1" style="--x:2.9%;--y:30.4%;--w:94.1%;--h:8.9%"></b>
+              <b class="shot__box" data-n="2" style="--x:2.9%;--y:48.9%;--w:45.8%;--h:8.1%"></b>
+              <b class="shot__box" data-n="3" style="--x:2.9%;--y:91.2%;--w:94.1%;--h:7.7%"></b>
+            </div></div>
+            <ol class="shot__key">
+              <li>Your name. Not a business name — this is the person who owns it.</li>
+              <li>Your email. It fills itself in from the account you just made, which is
+                correct. Leave it.</li>
+              <li>Phone and country, then scroll on down.</li>
+            </ol>
+            <figcaption>Organisation is marked optional and you can leave it empty.</figcaption>
+          </figure>
+        </li>
+
+        <li class="step">
+          <h3>Check the three things on the right, then pay</h3>
+          <figure class="shot">
+            <div class="shot__scroll"><div class="shot__wrap">
+              <img src="shots/domain-pay.png" width="1100" height="1100" loading="lazy"
+                   alt="The registration details panel showing the domain at $10.46, a one year registration period, automatic renewal switched on, and a blue Continue to pay button.">
+              <b class="shot__box" data-n="1" style="--x:6%;--y:14.7%;--w:88.4%;--h:7%"></b>
+              <b class="shot__box" data-n="2" style="--x:6%;--y:40.5%;--w:88.4%;--h:12%"></b>
+              <b class="shot__box" data-n="3" style="--x:1.6%;--y:71.5%;--w:96.7%;--h:10.8%"></b>
+            </div></div>
+            <ol class="shot__key">
+              <li><strong>The name, spelled exactly right.</strong> Read it once more.
+                Domains are not refundable, and a typo is a different name that somebody
+                has now bought.</li>
+              <li><strong>Automatic renewal should be on</strong> — it is on by default,
+                and the blue means on. Leave it that way. It is the single most useful
+                switch on this page.</li>
+              <li>Pay. About ten dollars fifty for the year, on your card.</li>
+            </ol>
+            <figcaption>Cloudflare sells domains at what they cost them — no mark-up, no
+              cheap first year that jumps later.</figcaption>
           </figure>
         </li>
       </ol>
@@ -491,15 +585,25 @@
         <details>
           <summary>The one thing that can really go wrong</summary>
           <p>If the domain lapses, the site goes dark and somebody else can buy your
-            name. That is why auto-renew goes on now, and why the card should be one
+            name. That is why automatic renewal stays on, and why the card should be one
             that will not quietly expire. Put a yearly reminder in your phone as
             well.</p>
         </details>
         <details>
           <summary>Nobody asked me to change any settings. Is that right?</summary>
-          <p>Yes. Because the domain was bought in the same account that runs the site,
-            the two are already connected. Buying it somewhere else is what creates the
-            fiddly step, and that is exactly the step we removed.</p>
+          <p>Yes. The page says your domain will automatically use Cloudflare's
+            nameservers, and because you bought it in the same account that runs the
+            site, the two are already joined up. Buying a domain somewhere else is what
+            creates the fiddly step — and that is the step we removed.</p>
+        </details>
+        <details>
+          <summary>Can I have a <em>.com.au</em> instead?</summary>
+          <p>You can, and some people prefer the local look. It costs you more work:
+            <em>.com.au</em> has to be bought from a separate Australian company, it
+            requires an active ABN held in the same name for as long as you keep the
+            domain, and it adds a step where you copy settings between two accounts.</p>
+          <p>Tell us if you would rather have it and we will walk you through the extra
+            part.</p>
         </details>
       </div>
     </section>
@@ -511,38 +615,106 @@
 
       <ol class="steps">
         <li class="step">
-          <h3>In your account, open <strong>Manage Account &rarr; Members</strong></h3>
-          <p>Then <strong>Invite Member</strong>.</p>
-        </li>
-        <li class="step">
-          <h3>Invite the address we give you, as an Administrator</h3>
-          <p>This lets us upload your website and set up your contact form. It does not
-            let us change your password, see your card, or take the domain.</p>
-          <figure class="fig">
-            <div class="fig__frame">
-              <div class="fig__bar"><span class="fig__dot"></span><span class="fig__dot"></span><span class="fig__dot"></span><span class="fig__addr">your account &middot; members</span></div>
-              <div class="fig__body">
-                <span class="fig__label">Invite</span>
-                <div class="fig__field" data-fill>the address we sent you</div>
-                <span class="fig__label">Role</span>
-                <div class="fig__field" data-fill>Administrator</div>
-                <span class="fig__mark">You can remove this again in two clicks</span>
-              </div>
-            </div>
+          <h3>Open Members, and start an invitation</h3>
+          <figure class="shot shot--wide">
+            <div class="shot__scroll"><div class="shot__wrap">
+              <img src="shots/members.png" width="1320" height="389" loading="lazy"
+                   alt="The Members page, reached from Manage Account, listing one member and showing a blue Invite members button.">
+              <b class="shot__box" data-n="1" style="--x:1.4%;--y:5.2%;--w:21.1%;--h:6.7%"></b>
+              <b class="shot__box" data-n="2" style="--x:84.1%;--y:47.5%;--w:13.4%;--h:10.3%"></b>
+            </div></div>
+            <ol class="shot__key">
+              <li>Top left of the dashboard: <strong>Manage Account</strong>, then
+                <strong>Members</strong>.</li>
+              <li>Then the blue <strong>Invite members</strong> button.</li>
+            </ol>
+            <figcaption>The one member already listed is you.</figcaption>
           </figure>
         </li>
+
+        <li class="step">
+          <h3>Put in the address we gave you</h3>
+          <figure class="shot shot--wide">
+            <div class="shot__scroll"><div class="shot__wrap">
+              <img src="shots/invite-email.png" width="1045" height="255" loading="lazy"
+                   alt="The Add email addresses box on the invite form.">
+              <b class="shot__box" data-n="1" style="--x:3.8%;--y:55.3%;--w:93%;--h:24.3%"></b>
+            </div></div>
+            <ol class="shot__key">
+              <li>One address — the one we sent you. Ignore the "second@example.com" in
+                the grey text; that is just an example of the format.</li>
+            </ol>
+          </figure>
+        </li>
+
+        <li class="step">
+          <h3>Choose what we are allowed to do</h3>
+          <p>This screen looks more complicated than the job it is doing. You need one
+            thing from it.</p>
+          <figure class="shot">
+            <div class="shot__scroll"><div class="shot__wrap">
+              <img src="shots/invite-roles.png" width="990" height="720" loading="lazy"
+                   alt="A list of permission categories: Overall roles, Developer Platform, App Security, Analytics and Logs, App Performance, Network Services, and Cloudflare One.">
+              <b class="shot__box" data-n="1" style="--x:1%;--y:4.6%;--w:97.8%;--h:10.1%"></b>
+              <b class="shot__box" data-n="2" style="--x:90.2%;--y:7.4%;--w:6.2%;--h:4.6%"></b>
+            </div></div>
+            <ol class="shot__key">
+              <li>Click the little arrow beside <strong>Overall roles</strong> to open
+                it, and find <strong>Administrator</strong> in the list.</li>
+              <li>Turn that one on. Leave every other row on this screen alone — you do
+                not need Developer Platform, App Security or any of the others.</li>
+            </ol>
+            <figcaption>Administrator lets us upload your website and set up your contact
+              form. It does not let us change your password, see your card, or take the
+              domain.</figcaption>
+          </figure>
+        </li>
+
+        <li class="step">
+          <h3>Two buttons, in this order</h3>
+          <p>This is the one place people get stuck, because the first button does not
+            look like it finishes anything — and it doesn't.</p>
+          <figure class="shot shot--wide">
+            <div class="shot__scroll"><div class="shot__wrap">
+              <img src="shots/invite-send.png" width="1050" height="290" loading="lazy"
+                   alt="Two buttons: Create policy above, and Invite members below next to a Cancel button.">
+              <b class="shot__box" data-n="1" style="--x:76.4%;--y:9.3%;--w:21.1%;--h:19.7%"></b>
+              <b class="shot__box" data-n="2" style="--x:74.9%;--y:71.7%;--w:24.2%;--h:20.3%"></b>
+            </div></div>
+            <ol class="shot__key">
+              <li><strong>Create policy</strong> first. This saves the permission you
+                just chose. Nothing is sent yet.</li>
+              <li><strong>Then Invite members.</strong> That is what actually sends it.
+                Both buttons go dark once they are ready to press.</li>
+            </ol>
+          </figure>
+        </li>
+
         <li class="step">
           <h3>We build it and tell you when it is live</h3>
-          <p>This is the part that is entirely ours: putting the site up, pointing your
-            domain at it, turning on the security certificate, and setting up the
-            contact form. You do not need to be there. It usually takes us under an
-            hour and you get a message when your name brings up your site.</p>
+          <p>Entirely ours: putting the site up, pointing your domain at it, turning on
+            the security certificate, and setting up the contact form. You do not need
+            to be there. It usually takes us under an hour, and you get a message when
+            your name brings up your site.</p>
         </li>
+
         <li class="step">
           <h3>When we are done, remove us</h3>
-          <p>Same screen, <strong>Remove</strong> next to our name. Nothing breaks — your
-            site keeps running exactly as it is. We would rather you did this than
-            forgot.</p>
+          <figure class="shot shot--wide">
+            <div class="shot__scroll"><div class="shot__wrap">
+              <img src="shots/members-menu.png" width="1320" height="568" loading="lazy"
+                   alt="The members list with two members, and a three-dot button at the end of each row.">
+              <b class="shot__box" data-n="1" style="--x:91%;--y:88%;--w:6%;--h:11%"></b>
+            </div></div>
+            <ol class="shot__key">
+              <li>Back on the Members page, find <strong>our</strong> row — not yours —
+                and click the <strong>three dots</strong> at the end of it. Choose the
+                option to remove us.</li>
+            </ol>
+            <figcaption>Nothing breaks when you do this. Your site keeps running exactly
+              as it is, because what you are removing is our permission to change it, not
+              anything the site needs. We would rather you did it than forgot.</figcaption>
+          </figure>
         </li>
       </ol>
     </section>
@@ -564,6 +736,22 @@
           <h3>You click one more confirmation email</h3>
           <p>Cloudflare checks that the inbox is really yours before it will send
             anything to it. Click the link, and check spam if it is slow.</p>
+          <figure class="shot shot--wide">
+            <div class="shot__scroll"><div class="shot__wrap">
+              <img src="shots/email-verify.png" width="1320" height="530" loading="lazy"
+                   alt="Illustration of the Email Routing screen: a box for the destination address and a Send verification email button.">
+              <b class="shot__box" data-n="1" style="--x:7%;--y:66%;--w:66%;--h:13%"></b>
+              <b class="shot__box" data-n="2" style="--x:74.5%;--y:66%;--w:18.5%;--h:13%"></b>
+            </div></div>
+            <ol class="shot__key">
+              <li>The inbox you want enquiries to arrive in.</li>
+              <li>Send the confirmation, then click the link in it. The address turns to
+                <strong>Verified</strong> and that is the step done.</li>
+            </ol>
+            <figcaption>Drawn rather than photographed &mdash; this screen only exists once
+              you own a domain, so there was nothing to photograph yet. Your version will
+              have your own address in it.</figcaption>
+          </figure>
         </li>
         <li class="step">
           <h3>We send a test enquiry and you tell us it landed</h3>
@@ -664,9 +852,9 @@
         <details>
           <summary>The site will not load at all</summary>
           <p>Nine times out of ten the domain has lapsed. Open your account, go to
-            <strong>Domain Registration</strong>, and see whether it says expired — if it
-            does, renewing usually brings the site straight back within the hour.</p>
-          <p>If the domain is fine, check whether it is only you: try it on mobile data with
+            <strong>Domains</strong> then <strong>Registrations</strong>, and see whether
+            it says expired — if it does, renewing usually brings the site straight back
+            within the hour.</p>
             the wi-fi off. If it works there, the problem is your own connection, not the site.</p>
         </details>
         <details>
