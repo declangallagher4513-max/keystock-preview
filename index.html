@@ -254,7 +254,9 @@
                transform: rotateX(var(--tx, 0deg)) rotateY(var(--ty, 0deg));
                backface-visibility: hidden; }
   .panel { backface-visibility: hidden; }
-  @media (hover: hover) and (pointer: fine) {
+  /* any-hover, not hover: the primary-pointer form reports coarse on a
+     touchscreen laptop and silently disabled the whole interaction there. */
+  @media (any-hover: hover) and (any-pointer: fine) {
     .dev__body:hover { transform: rotateX(var(--tx, 0deg)) rotateY(var(--ty, 0deg)) translateZ(calc(26px * var(--k))); }
   }
   @media (prefers-reduced-motion: reduce) { .dev__body { transition: none; } }
@@ -480,7 +482,7 @@
                      font-variant-numeric: tabular-nums; color: var(--sc-accent);
                      font-size: 0.82rem; letter-spacing: 0.1em; }
   .step p  { margin: 0; color: var(--sc-ink-soft); font-size: 0.94rem; }
-  @media (hover: hover) and (pointer: fine) { .step:hover { transform: translateY(-4px); } }
+  @media (any-hover: hover) and (any-pointer: fine) { .step:hover { transform: translateY(-4px); } }
 
   /* Reveal. The class is added by script, never written into the markup, so a
      page whose script never runs shows everything rather than nothing -- the
@@ -612,7 +614,7 @@
      wider than its lowercase, so 62ch measured 768px and rendered ~85 characters
      a line -- over the limit while looking like it had been set under it. */
   .qa > p { margin: 0 0 1.2rem; color: var(--sc-ink-soft); max-width: 40rem; text-wrap: pretty; }
-  @media (hover: hover) and (pointer: fine) { .qa > summary:hover { color: var(--sc-accent); } }
+  @media (any-hover: hover) and (any-pointer: fine) { .qa > summary:hover { color: var(--sc-accent); } }
   @media (prefers-reduced-motion: reduce) {
     .qa > summary::after, .strip__row input, .strip__row button { transition: none; }
   }
@@ -1125,9 +1127,14 @@
     level();
     schedule();
 
-    if (reduce || !matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+    /* No capability query here on purpose. Asking the browser what the visitor
+       HAS is a guess that gets touchscreen laptops wrong; asking the event what
+       they just USED is a fact. A touch-only device never sends a hovering
+       pointermove, so the listeners simply never fire. */
+    if (reduce) return;
     [].forEach.call(wheel.querySelectorAll('.dev__body'), function (b) {
       b.addEventListener('pointermove', function (e) {
+        if (e.pointerType && e.pointerType !== 'mouse') return;
         var r = b.getBoundingClientRect();
         if (!r.width || !r.height) return;
         b.style.setProperty('--ty', (((e.clientX - r.left) / r.width - 0.5) * 15).toFixed(2) + 'deg');
