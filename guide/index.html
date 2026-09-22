@@ -1103,9 +1103,9 @@
     var nowEl = document.getElementById('wizNow');
     var fill = document.getElementById('wizFill');
     var KEY = 'keystock.guide.step';
-    var reached = 0;                       // furthest step opened, for the ticks
+    var done = 0;                          // steps finished, which is what the ticks count
 
-    try { reached = parseInt(localStorage.getItem(KEY) || '0', 10) || 0; } catch (e) {}
+    try { done = parseInt(localStorage.getItem(KEY) || '0', 10) || 0; } catch (e) {}
 
     function paneById(id) {
       for (var n = 0; n < panes.length; n++) if (panes[n].id === id) return panes[n];
@@ -1125,13 +1125,24 @@
          showing the number of a step you are not on. */
       wiz.setAttribute('data-stepping', i > -1 ? '1' : '0');
 
+      /* A step is finished once you have moved on from it, which is why opening
+         step n is what ticks the n before it. The last step has nothing after it
+         to do that, so leaving it for the reference half is what finishes it —
+         and only when it had actually been opened, or jumping straight from the
+         contents to a reference section would tick seven steps nobody did. */
+      if (i > -1) { if (i > done) done = i; }
+      else if (panes.indexOf(el) > panes.indexOf(last) && done === steps.length - 1) {
+        done = steps.length;
+      }
+      try { localStorage.setItem(KEY, String(done)); } catch (e) {}
+
       stepLinks.forEach(function (a, n) {
         if (n === i) a.setAttribute('aria-current', 'step');
         else a.removeAttribute('aria-current');
         /* A tick means "you have been here", not "this is correct" — nothing on
            the page can check whether they actually did it, and a tick that
            claims otherwise would be the page lying. */
-        if (n < Math.max(reached, i)) a.setAttribute('data-done', '1');
+        if (n < done) a.setAttribute('data-done', '1');
         else a.removeAttribute('data-done');
       });
       otherLinks.forEach(function (a) {
@@ -1142,7 +1153,6 @@
       if (i > -1) {
         if (nowEl) nowEl.textContent = String(i + 1);
         if (fill) fill.style.transform = 'scaleX(' + ((i + 1) / steps.length).toFixed(3) + ')';
-        if (i > reached) { reached = i; try { localStorage.setItem(KEY, String(i)); } catch (e) {} }
         /* Only a step is a position worth returning to. Reading the reference
            half on Thursday must not move where you got to on Tuesday. */
         try { localStorage.setItem(KEY + '.at', String(i)); } catch (e) {}
