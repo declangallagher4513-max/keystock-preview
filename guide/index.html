@@ -206,8 +206,22 @@
   /* Only once the script has run: one at a time. Without it none of these
      rules match, every step is in the page, and the sidebar is a set of
      anchors down a long document — which is the page this replaced. */
-  .js .wiz__step { display: none; }
-  .js .wiz__step[data-on="1"] { display: block; }
+  /* One pane at a time. The overview, the seven steps and the four reference
+     sections are all destinations of their own. Before this only the steps
+     switched, so every step opened with "What you are about to do" sitting
+     above it and the whole reference half stacked underneath. */
+  .js .pane { display: none; }
+  /* A pane used to be one section among twelve down a long page, so it carried
+     the space that separated it from the one above. Opened on its own it is the
+     first thing under the masthead and that space is only a gap. */
+  .js .pane[data-on="1"] { display: block; margin-top: 0; }
+
+  /* Step N of 7 belongs to the walkthrough. On the overview or a reference
+     section there is no N, so the counter and its bar go rather than showing a
+     number for a page that is not a step. The margin goes with them, or the
+     empty wrapper leaves a gap where the counter used to be. */
+  .js .wiz:not([data-stepping="1"]) { margin: 0; }
+  .js .wiz:not([data-stepping="1"]) .wiz__head { display: none; }
 
   .wiz__foot { display: flex; gap: 0.8rem; align-items: center; flex-wrap: wrap;
                margin: 2.2rem 0 0; padding: 1.3rem 0 0; border-top: 1px solid var(--line); }
@@ -255,6 +269,13 @@
   }
 
   .toc__sep { margin: 1.5rem 0 0.7rem; padding-top: 1.2rem; border-top: 1px solid var(--line); }
+
+  /* The overview is a destination, not a numbered step, so it takes the link
+     styling without the counter that .toc a::before would otherwise give it. */
+  .toc__intro { margin: 0 0 1.3rem; }
+  .toc__intro a { padding-left: 0.2rem; border-left: 0; }
+  .toc__intro a::before { content: none; }
+  .toc__intro a[aria-current="true"] { color: var(--ink); font-weight: 600; }
 
   /* ---- annotated screenshots ------------------------------------------
      A real screenshot with numbered pins over it and the explanations as
@@ -443,6 +464,7 @@
     <summary>Contents</summary>
     <p class="toc__h">Contents</p>
     <nav aria-label="Contents">
+      <p class="toc__intro"><a href="#start">What you are about to do</a></p>
       <p class="toc__h">Setting it up</p>
       <ol class="steplist">
         <li><a href="#s-ready">Before you start</a></li>
@@ -454,7 +476,7 @@
         <li><a href="#s-remove">Remove our access</a></li>
       </ol>
       <p class="toc__h toc__sep">Afterwards</p>
-      <ol>
+      <ol class="toc__after">
         <li><a href="#edit">Changing your site</a></li>
         <li><a href="#working">Keeping it working</a></li>
         <li><a href="#wrong">If something looks wrong</a></li>
@@ -465,7 +487,7 @@
 
   <main id="guide">
 
-    <section id="start">
+    <section class="pane" id="start" data-on="1">
       <h2>What you are about to do</h2>
       <p class="lede">Seven steps, spread over however long you like. Most people are
         done inside half an hour, and you can stop after any step and pick it up
@@ -505,14 +527,14 @@
         If you never speak to us again, it stays up.</p>
     </section>
 
-    <div class="wiz" id="wiz">
+    <div class="wiz" id="wiz" data-stepping="0">
       <div class="wiz__head">
         <p class="wiz__count">Step <b id="wizNow">1</b> of <b id="wizTotal">7</b></p>
         <span class="wiz__bar" aria-hidden="true"><i id="wizFill"></i></span>
       </div>
 
       <!-- ============================ 1 ============================ -->
-      <section class="wiz__step" id="s-ready" data-title="Before you start" data-on="1">
+      <section class="wiz__step pane" id="s-ready" data-title="Before you start">
         <h2>Before you start</h2>
         <p class="lede">Two things to have on hand. There is no software to install and
           nothing to download — it all happens in a browser, and you can do it on a
@@ -545,7 +567,7 @@
       </section>
 
       <!-- ============================ 2 ============================ -->
-      <section class="wiz__step" id="s-account" data-title="Make your account">
+      <section class="wiz__step pane" id="s-account" data-title="Make your account">
         <h2>Make your account</h2>
         <p class="lede">One account holds everything: the domain, the website, and the
           contact form. It is free and it takes about a minute.</p>
@@ -597,7 +619,7 @@
       </section>
 
       <!-- ============================ 3 ============================ -->
-      <section class="wiz__step" id="s-domain" data-title="Buy your domain">
+      <section class="wiz__step pane" id="s-domain" data-title="Buy your domain">
         <h2>Buy your domain</h2>
         <p class="lede">The address people type to reach you. You buy it inside the account
           you just made, which is the reason there is nothing to connect up afterwards.</p>
@@ -694,7 +716,7 @@
       </section>
 
       <!-- ============================ 4 ============================ -->
-      <section class="wiz__step" id="s-invite" data-title="Let us in">
+      <section class="wiz__step pane" id="s-invite" data-title="Let us in">
         <h2>Let us in</h2>
         <p class="lede">One invitation, which you can withdraw the moment we are finished.
           Your password is never part of this.</p>
@@ -779,7 +801,7 @@
       </section>
 
       <!-- ============================ 5 ============================ -->
-      <section class="wiz__step" id="s-build" data-title="We build it">
+      <section class="wiz__step pane" id="s-build" data-title="We build it">
         <h2>We build it</h2>
         <p class="lede">Nothing for you to do here. This is the part that is entirely ours,
           and you do not need to be around for it.</p>
@@ -804,7 +826,7 @@
       </section>
 
       <!-- ============================ 6 ============================ -->
-      <section class="wiz__step" id="s-enquiries" data-title="Check enquiries arrive">
+      <section class="wiz__step pane" id="s-enquiries" data-title="Check enquiries arrive">
         <h2>Check enquiries arrive</h2>
         <p class="lede">The contact form on your site emails you when somebody fills it in.
           There is no separate account and nothing to pay — it runs inside the account you
@@ -869,7 +891,7 @@
       </section>
 
       <!-- ============================ 7 ============================ -->
-      <section class="wiz__step" id="s-remove" data-title="Remove our access">
+      <section class="wiz__step pane" id="s-remove" data-title="Remove our access">
         <h2>Remove our access</h2>
         <p class="lede">The last step, and the one that makes the account entirely yours
           again.</p>
@@ -901,7 +923,7 @@
       </section>
     </div>
 
-    <section id="edit">
+    <section class="pane" id="edit">
       <h2>Changing your site</h2>
       <p class="lede">New hours, a new phone number, a price that has moved, a note
         that you are shut for a week. Here is how that works today, and what is
@@ -944,7 +966,7 @@
     </section>
 
 
-    <section id="working">
+    <section class="pane" id="working">
       <h2>Keeping it working</h2>
       <p class="lede">Three things need occasional attention. All three are yours, and none
         of them takes longer than a minute.</p>
@@ -964,7 +986,7 @@
         reviews. If you change your phone number, change it there too.</p>
     </section>
 
-    <section id="wrong">
+    <section class="pane" id="wrong">
       <h2>If something looks wrong</h2>
       <p class="lede">In rough order of how often it actually happens.</p>
 
@@ -1008,7 +1030,7 @@
       </div>
     </section>
 
-    <section id="leaving">
+    <section class="pane" id="leaving">
       <h2>Taking it somewhere else</h2>
       <p class="lede">Written down because a promise that you are not locked in is worth
         nothing unless the exit is documented.</p>
@@ -1068,8 +1090,16 @@
     var steps = [].slice.call(wiz.querySelectorAll('.wiz__step'));
     if (steps.length < 2) return;
 
+    /* Twelve panes, one open: the overview, the seven steps, and the four
+       reference sections. They are in document order, which is the order the
+       page read in when it was one long scroll -- so back and next still walk
+       it end to end, and nothing had to be reordered to split it up. */
+    var panes = [].slice.call(document.querySelectorAll('#guide .pane'));
+    var intro = document.getElementById('start');
+    var last = steps[steps.length - 1];
 
-    var links = [].slice.call(document.querySelectorAll('.steplist a'));
+    var stepLinks = [].slice.call(document.querySelectorAll('.steplist a'));
+    var otherLinks = [].slice.call(document.querySelectorAll('.toc__intro a, .toc__after a'));
     var nowEl = document.getElementById('wizNow');
     var fill = document.getElementById('wizFill');
     var KEY = 'keystock.guide.step';
@@ -1077,13 +1107,25 @@
 
     try { reached = parseInt(localStorage.getItem(KEY) || '0', 10) || 0; } catch (e) {}
 
-    function show(i, push) {
-      i = Math.max(0, Math.min(steps.length - 1, i));
-      steps.forEach(function (s, n) {
-        if (n === i) s.setAttribute('data-on', '1');
-        else s.removeAttribute('data-on');
+    function paneById(id) {
+      for (var n = 0; n < panes.length; n++) if (panes[n].id === id) return panes[n];
+      return null;
+    }
+
+    function show(el, push) {
+      if (!el) return;
+      panes.forEach(function (q) {
+        if (q === el) q.setAttribute('data-on', '1');
+        else q.removeAttribute('data-on');
       });
-      links.forEach(function (a, n) {
+
+      var i = steps.indexOf(el);
+      /* Step N of 7 is about the walkthrough. The overview and the reference
+         sections are not steps, so the counter goes rather than sitting there
+         showing the number of a step you are not on. */
+      wiz.setAttribute('data-stepping', i > -1 ? '1' : '0');
+
+      stepLinks.forEach(function (a, n) {
         if (n === i) a.setAttribute('aria-current', 'step');
         else a.removeAttribute('aria-current');
         /* A tick means "you have been here", not "this is correct" — nothing on
@@ -1092,54 +1134,28 @@
         if (n < Math.max(reached, i)) a.setAttribute('data-done', '1');
         else a.removeAttribute('data-done');
       });
-      if (nowEl) nowEl.textContent = String(i + 1);
-      if (fill) fill.style.transform = 'scaleX(' + ((i + 1) / steps.length).toFixed(3) + ')';
+      otherLinks.forEach(function (a) {
+        if (a.getAttribute('href') === '#' + el.id) a.setAttribute('aria-current', 'true');
+        else a.removeAttribute('aria-current');
+      });
 
-      if (i > reached) { reached = i; try { localStorage.setItem(KEY, String(i)); } catch (e) {} }
-      try { localStorage.setItem(KEY + '.at', String(i)); } catch (e) {}
+      if (i > -1) {
+        if (nowEl) nowEl.textContent = String(i + 1);
+        if (fill) fill.style.transform = 'scaleX(' + ((i + 1) / steps.length).toFixed(3) + ')';
+        if (i > reached) { reached = i; try { localStorage.setItem(KEY, String(i)); } catch (e) {} }
+        /* Only a step is a position worth returning to. Reading the reference
+           half on Thursday must not move where you got to on Tuesday. */
+        try { localStorage.setItem(KEY + '.at', String(i)); } catch (e) {}
+      }
 
       if (push) {
-        var id = steps[i].id;
-        if (history.replaceState) history.replaceState(null, '', '#' + id);
-        else location.hash = id;
+        if (history.replaceState) history.replaceState(null, '', '#' + el.id);
+        else location.hash = el.id;
       }
     }
 
-    function indexOfHash() {
-      var h = (location.hash || '').slice(1);
-      for (var n = 0; n < steps.length; n++) if (steps[n].id === h) return n;
-      return -1;
-    }
-
-    /* Buttons at the foot of each step. Built here rather than written into the
-       markup so the no-JS page does not carry controls that do nothing. */
-    steps.forEach(function (s, n) {
-      var foot = document.createElement('div');
-      foot.className = 'wiz__foot';
-
-      if (n > 0) {
-        var back = document.createElement('button');
-        back.type = 'button'; back.className = 'wiz__back'; back.textContent = 'Back';
-        back.addEventListener('click', function () { show(n - 1, true); focusStep(); });
-        foot.appendChild(back);
-      }
-      if (n < steps.length - 1) {
-        var next = document.createElement('button');
-        next.type = 'button'; next.className = 'wiz__next';
-        next.textContent = n === 0 ? 'Start' : 'Done — next step';
-        next.addEventListener('click', function () { show(n + 1, true); focusStep(); });
-        foot.appendChild(next);
-      } else {
-        var fin = document.createElement('p');
-        fin.className = 'wiz__done';
-        fin.textContent = 'That is everything. The rest of this page is reference.';
-        foot.appendChild(fin);
-      }
-      s.appendChild(foot);
-    });
-
-    function focusStep() {
-      var open = steps.filter(function (s) { return s.hasAttribute('data-on'); })[0];
+    function focusPane() {
+      var open = panes.filter(function (q) { return q.hasAttribute('data-on'); })[0];
       if (!open) return;
       var h = open.querySelector('h2');
       if (h) {
@@ -1151,47 +1167,89 @@
       open.scrollIntoView({ block: 'start', behavior: 'auto' });
     }
 
-    links.forEach(function (a, n) {
+    /* What the forward button says where it sits. Built here rather than written
+       into the markup so the no-JS page does not carry controls that do
+       nothing. */
+    function nextLabel(n) {
+      if (panes[n] === intro) return 'Start';
+      if (panes[n] === last) return 'Read what comes afterwards';
+      if (steps.indexOf(panes[n]) > -1) return 'Done — next step';
+      return 'Next';
+    }
+
+    panes.forEach(function (q, n) {
+      var foot = document.createElement('div');
+      foot.className = 'wiz__foot';
+
+      if (n > 0) {
+        var back = document.createElement('button');
+        back.type = 'button'; back.className = 'wiz__back'; back.textContent = 'Back';
+        back.addEventListener('click', function () { show(panes[n - 1], true); focusPane(); });
+        foot.appendChild(back);
+      }
+      if (n < panes.length - 1) {
+        var next = document.createElement('button');
+        next.type = 'button'; next.className = 'wiz__next'; next.textContent = nextLabel(n);
+        next.addEventListener('click', function () { show(panes[n + 1], true); focusPane(); });
+        foot.appendChild(next);
+      }
+      if (q === last) {
+        var fin = document.createElement('p');
+        fin.className = 'wiz__done';
+        fin.textContent = 'That is everything. What follows is reference, for whenever you need it.';
+        foot.appendChild(fin);
+      }
+      q.appendChild(foot);
+    });
+
+    function wire(a) {
       a.addEventListener('click', function (e) {
+        var target = paneById((a.getAttribute('href') || '').slice(1));
+        if (!target) return;
         e.preventDefault();
-        show(n, true);
-        focusStep();
+        show(target, true);
+        focusPane();
         if (matchMedia('(max-width: 899px)').matches) {
           var toc = document.getElementById('toc');
           if (toc) toc.open = false;
         }
       });
-    });
+    }
+    stepLinks.forEach(wire);
+    otherLinks.forEach(wire);
 
+    /* Any other link to a pane -- one written into the prose later, say -- needs
+       no wiring: it sets the hash, and this puts the pane up. */
     addEventListener('hashchange', function () {
-      var i = indexOfHash();
-      if (i > -1) { show(i, false); focusStep(); }
+      var target = paneById((location.hash || '').slice(1));
+      if (target) { show(target, false); focusPane(); }
     });
 
-    /* Where to open. A link with a step in it wins; otherwise pick up where they
-       left off. */
-    var start = indexOfHash();
+    /* Where to open. A link naming a pane wins; otherwise pick up where they
+       left off, and a first visit starts on the overview, which is the page
+       that explains what the seven steps are. */
+    var open = paneById((location.hash || '').slice(1));
     /* Only a position restored from storage is "picking up where you left off".
        Following a link to a step is not resuming, and saying so would be odd. */
     var restored = false;
-    if (start < 0) {
-      try { start = parseInt(localStorage.getItem(KEY + '.at') || '0', 10) || 0; } catch (e) { start = 0; }
-      restored = start > 0;
+    if (!open) {
+      var at = -1;
+      try { at = parseInt(localStorage.getItem(KEY + '.at'), 10); } catch (e) {}
+      if (at > -1 && steps[at]) { open = steps[at]; restored = at > 0; }
+      else open = intro || steps[0];
     }
-    show(start, false);
+    show(open, false);
     if (restored) {
       /* Coming back to step five and landing on the overview means scrolling
          past everything you already did to find where you were. */
       requestAnimationFrame(function () {
-        steps[start].scrollIntoView({ block: 'start', behavior: 'auto' });
+        open.scrollIntoView({ block: 'start', behavior: 'auto' });
       });
-    }
-    if (restored) {
       var note = document.createElement('p');
       note.className = 'wiz__done';
       note.style.margin = '0 0 1rem';
       note.textContent = 'Picking up where you left off. Use the list to go back to any step.';
-      steps[start].insertBefore(note, steps[start].firstChild);
+      open.insertBefore(note, open.firstChild);
     }
   })();
 </script>
