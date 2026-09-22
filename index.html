@@ -359,7 +359,8 @@
      wider than the viewport, and centring an overflowing grid item is not
      reliably symmetric, which showed as the arrival sitting off-centre on a
      laptop aspect while looking fine on a phone. */
-  .caststage { position: absolute; inset: 0; perspective: 1150px; overflow: hidden; }
+  .caststage { position: absolute; inset: 0; perspective: 1150px; overflow: hidden;
+                container-type: size; }
 
   /* Scrubbed, not played: currentTime is written from the act's own progress,
      so the laptop opens at exactly the pace you scroll. object-fit: cover is
@@ -367,9 +368,32 @@
      crop takes nothing from either end. */
   .castfilm { position: absolute; inset: 0; width: 100%; height: 100%;
               object-fit: cover; object-position: 50% 50%; display: none; }
-  .castmark { position: absolute; inset: 0; z-index: 2;
-              display: grid; place-content: center; text-align: center;
-              padding: 6%; opacity: 0; pointer-events: none; }
+  /* The film is object-fit: cover, so where the laptop sits in the stage moves
+     with the crop -- on a 16:10 window the film is scaled to the height and
+     about 5% is cut off each side. This box is the film's own rectangle, worked
+     out the way cover works it out, so a per-cent inside it lands on the same
+     pixels of the film at every viewport. */
+  .castfit {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    width: max(100cqw, calc(100cqh * 16 / 9)); aspect-ratio: 16 / 9;
+    z-index: 2; pointer-events: none;
+  }
+  /* Where the screen is inside that rectangle. Measured off the film's own last
+     frame by tools/castrect.mjs, not guessed: the wordmark has to look like
+     something the laptop is displaying, and it only does that if it is actually
+     on the glass. */
+  .castmark {
+    position: absolute;
+    left: var(--scr-x); top: var(--scr-y); width: var(--scr-w); height: var(--scr-h);
+    --scr-x: 24.58%; --scr-y: 17.41%; --scr-w: 50.89%; --scr-h: 65.09%;
+    container-type: inline-size;
+    display: grid; place-content: center; text-align: center;
+    padding: 4%; opacity: 0; pointer-events: none;
+  }
+  /* Sized against the screen it sits on rather than the viewport -- that is the
+     difference between type on a laptop and type in front of one. */
+  .castmark .castscreen__mark { font-size: 15cqw; line-height: 1; }
+  .castmark .castscreen__line { font-size: 3.4cqw; margin: 0.9em 0 0; }
   body.cast-film .castfilm { display: block; }
   body.cast-film .castdev  { display: none; }
   .castdev {
@@ -722,9 +746,11 @@
              grow with it, while over the film the type simply arrives. Both
              sit inside an aria-hidden stage, so nothing is announced twice.
              Collapses to one when the other two ratios are filmed. -->
-        <div class="castmark" id="castmark">
-          <p class="castscreen__mark">Keystock</p>
-          <p class="castscreen__line">Built once. Handed over. Yours.</p>
+        <div class="castfit">
+          <div class="castmark" id="castmark">
+            <p class="castscreen__mark">Keystock</p>
+            <p class="castscreen__line">Built once. Handed over. Yours.</p>
+          </div>
         </div>
         <div class="castdev is-laptop" id="castdev">
           <div class="panel">
@@ -1176,12 +1202,13 @@
       }
     }
 
-    /* The film finishes here and the last fifth of the act belongs to the
-       wordmark arriving on the screen the film has just filled the frame with.
-       They overlap: the mark starts before the push-in has quite stopped, so
-       one becomes the other rather than the film ending and something else
-       beginning. */
-    var FILM_END = 0.82, MARK_IN = 0.74, MARK_FULL = 0.94;
+    /* The film finishes first, and only then does the wordmark arrive. These
+       used to overlap -- the mark began at 0.74 while the film ran to 0.82 --
+       so it faded in over a laptop that was still turning, onto glass that was
+       not yet facing the viewer. The film now ends with the machine settled
+       square on, and the mark waits for it: a beat of the laptop sitting there
+       lit and still, then the screen comes on. */
+    var FILM_END = 0.76, MARK_IN = 0.80, MARK_FULL = 0.95;
 
     var raf = 0, warmed = false;
     function frame() {
@@ -1216,11 +1243,16 @@
       /* Some browsers will not decode a frame for a video that has never been
          told to play, however much you seek it. One muted play-and-pause is
          enough to wake the decoder; it is never allowed to actually run. */
+      /* Waking the decoder has to hand the frame back afterwards. play() starts
+         from wherever the film is -- frame one, on a first scroll -- and its
+         promise can settle after the seek this same scroll asked for, leaving
+         the film on the closed laptop while the wordmark fades in over it.
+         Re-running the loop once it has paused re-applies the right time. */
       function warm() {
         if (warmed) return; warmed = true;
         var pr = film.play();
-        if (pr && pr.then) pr.then(function () { film.pause(); }, function () {});
-        else film.pause();
+        if (pr && pr.then) pr.then(function () { film.pause(); schedule(); }, function () { schedule(); });
+        else { film.pause(); schedule(); }
       }
       film.addEventListener('loadedmetadata', schedule);
       film.addEventListener('seeked', function () { film.pause(); });
